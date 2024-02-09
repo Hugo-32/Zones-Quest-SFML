@@ -12,6 +12,7 @@ protected:
     RectangleShape shape;
 
 public:
+    //виртульная функция
     virtual void update() = 0;
     virtual void draw(RenderWindow& window) = 0;
 
