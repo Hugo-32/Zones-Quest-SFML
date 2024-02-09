@@ -12,7 +12,6 @@ protected:
     RectangleShape shape;
 
 public:
-    virtual void update() = 0;
     virtual void draw(RenderWindow& window) = 0;
 
     void setPosition(float x, float y) {
@@ -28,10 +27,6 @@ public:
         shape.setSize(Vector2f(width, height));
     }
 
-    void update() override {
-        // какие-то дейтсвия с красной зоной
-    }
-
     void draw(RenderWindow& window) override {
         window.draw(shape);
     }
@@ -45,9 +40,6 @@ public:
         shape.setSize(Vector2f(width, height));
     }
 
-    void update() override {
-        // какие-то дейтсвия с зеленой зоной
-    }
 
     void draw(RenderWindow& window) override {
         window.draw(shape);
@@ -62,9 +54,6 @@ public:
         shape.setSize(Vector2f(width, height));
     }
 
-    void update() override {
-        // какие-то дейтсвия с синей зоной
-    }
 
     void draw(RenderWindow& window) override {
         window.draw(shape);
@@ -79,9 +68,6 @@ public:
         shape.setSize(Vector2f(width, height));
     }
 
-    void update() override {
-        // какие-то дейтсвия с желтой зоной
-    }
 
     void draw(RenderWindow& window) override {
         window.draw(shape);
@@ -127,7 +113,6 @@ public:
 
             window.clear();
             for (int i = 0; i < 4; ++i) {
-                zones[i]->update();
                 zones[i]->draw(window);
             }
             window.display();
