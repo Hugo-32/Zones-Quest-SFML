@@ -20,10 +20,10 @@ public:
     }
 };
 
-class RedZone : public Zone {
+class BlackZone : public Zone {
 public:
-    RedZone(float width, float height) {
-        color = Color::Red;
+    BlackZone(float width, float height) {
+        color = Color::Black;
         shape.setFillColor(color);
         shape.setSize(Vector2f(width, height));
     }
@@ -104,7 +104,7 @@ public:
         float zoneWidth = desktop.width / 2.0f;
         float zoneHeight = desktop.height / 2.0f;
 
-        zones[0] = new RedZone(zoneWidth, zoneHeight);
+        zones[0] = new BlackZone(zoneWidth, zoneHeight);
         zones[1] = new GreenZone(zoneWidth, zoneHeight);
         zones[2] = new BlueZone(zoneWidth, zoneHeight);
         zones[3] = new YellowZone(zoneWidth, zoneHeight);
