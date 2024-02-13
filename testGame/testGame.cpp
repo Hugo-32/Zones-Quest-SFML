@@ -17,6 +17,10 @@ public:
     void setPosition(float x, float y) {
         shape.setPosition(x, y);
     }
+    RectangleShape& getShape()
+    {
+        return shape;
+    }
 };
 
 class BlackZone : public Zone {
@@ -74,10 +78,65 @@ public:
     }
 };
 
+class Player {
+private:
+    CircleShape shape;
+    Zone* currentZone;   
+    Color playerColor;
+
+public:
+    Player(float radius = 20.0f) {
+        shape.setRadius(radius);
+        currentZone = nullptr;
+        shape.setFillColor(playerColor);
+    }
+    Vector2f getPosition() const {
+        return shape.getPosition();
+    }
+    void setPosition(float x, float y) {
+        shape.setPosition(x, y);
+    }
+    Zone* getZone() const {
+        return currentZone;
+    }
+    void setZone(Zone* zone) {
+        currentZone = zone;
+    }
+
+    void draw(RenderWindow& window) {
+        window.draw(shape);
+    }
+    void setColor(Color color) {
+        playerColor = color;
+        shape.setFillColor(playerColor);
+    }
+    void setColorBasedOnZone() {
+        if (currentZone != nullptr) {
+            if (dynamic_cast<BlackZone*>(currentZone) != nullptr) {
+                playerColor = Color::White;
+            }
+            else if (dynamic_cast<BlueZone*>(currentZone) != nullptr) {
+                playerColor = Color::Red;
+            }
+            else if (dynamic_cast<YellowZone*>(currentZone) != nullptr) {
+                playerColor = Color::Green;
+            }
+            else if (dynamic_cast<GreenZone*>(currentZone) != nullptr) {
+                playerColor = Color::Yellow;
+            }
+        }
+
+        shape.setFillColor(playerColor);
+    }
+};
+
+
 class Game {
 private:
     RenderWindow window;
     Zone* zones[4];
+    Player player;
+    Color playerColors[4];
 
 public:
     Game() {
@@ -95,6 +154,11 @@ public:
         zones[2] = new BlueZone(zoneWidth, zoneHeight);
         zones[3] = new YellowZone(zoneWidth, zoneHeight);
 
+        playerColors[0] = Color::Red;
+        playerColors[1] = Color::Green;
+        playerColors[2] = Color::Blue;
+        playerColors[3] = Color::Yellow;
+
         random_shuffle(begin(zones), end(zones));
         for (int i = 0; i < 4; ++i) {
             float x = (i % 2) * zoneWidth;
@@ -109,19 +173,42 @@ public:
             while (window.pollEvent(event)) {
                 if (event.type == Event::Closed)
                     window.close();
+
+                if (event.type == Event::KeyPressed) {
+                    if (event.key.code == Keyboard::Right) {
+                        player.setPosition(player.getPosition().x + 10.0f, player.getPosition().y);
+                    }
+                    else if (event.key.code == Keyboard::Left) {
+                        player.setPosition(player.getPosition().x - 10.0f, player.getPosition().y);
+                    }
+                    else if (event.key.code == Keyboard::Down) {
+                        player.setPosition(player.getPosition().x, player.getPosition().y + 10.0f);
+                    }
+                    else if (event.key.code == Keyboard::Up) {
+                        player.setPosition(player.getPosition().x, player.getPosition().y - 10.0f);
+                    }
+                }
+            }
+
+            for (int i = 0; i < 4; ++i) {
+                if (zones[i]->getShape().getGlobalBounds().contains(player.getPosition())) {
+                    if (player.getZone() != zones[i]) {
+                        player.setZone(zones[i]);
+                        player.setColorBasedOnZone();
+                    }
+                    break;
+                }
             }
 
             window.clear();
+
             for (int i = 0; i < 4; ++i) {
                 zones[i]->draw(window);
             }
-            window.display();
-        }
-    }
 
-    ~Game() {
-        for (int i = 0; i < 4; ++i) {
-            delete zones[i];
+            player.draw(window);
+
+            window.display();
         }
     }
 };
