@@ -84,13 +84,14 @@ public:
 
 class Player {
 private:
-    CircleShape shape;
+    RectangleShape shape;
     Zone* currentZone;   
     Color playerColor;
 
 public:
-    Player(float radius = 20.0f) {
-        shape.setRadius(radius);
+    Player() {
+        //shape.setRadius(radius);
+        shape.setSize(Vector2f(100, 100));
         currentZone = nullptr;
         shape.setFillColor(playerColor);
     }
@@ -123,7 +124,7 @@ public:
                 playerColor = Color::Red;
             }
             else if (dynamic_cast<YellowZone*>(currentZone) != nullptr) {
-                playerColor = Color::Green;
+                playerColor = Color::Transparent;
             }
             else if (dynamic_cast<GreenZone*>(currentZone) != nullptr) {
                 playerColor = Color::Yellow;
