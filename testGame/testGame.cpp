@@ -29,7 +29,7 @@ public:
     BlackZone(float width, float height) {
         //color = Color::Black;
         //shape.setFillColor(color);
-        texture.loadFromFile("game1.jpg");
+        texture.loadFromFile("background1.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
@@ -42,7 +42,7 @@ public:
 class GreenZone : public Zone {
 public:
     GreenZone(float width, float height) {
-        texture.loadFromFile("game2.jpg");
+        texture.loadFromFile("background2.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
@@ -56,7 +56,7 @@ public:
 class BlueZone : public Zone {
 public:
     BlueZone(float width, float height) {
-        texture.loadFromFile("game3.jpg");
+        texture.loadFromFile("background3.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
@@ -70,7 +70,7 @@ public:
 class YellowZone : public Zone {
 public:
     YellowZone(float width, float height) {
-        texture.loadFromFile("game4.jpg");
+        texture.loadFromFile("background4.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
