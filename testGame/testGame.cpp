@@ -61,7 +61,6 @@ public:
         shape.setSize(Vector2f(width, height));
     }
 
-
     void draw(RenderWindow& window) override {
         window.draw(shape);
     }
@@ -89,9 +88,12 @@ private:
 
 public:
     Player() {
-        shape.setSize(Vector2f(50, 75));
+        shape.setSize(Vector2f(40, 60));
         currentZone = nullptr;
         shape.setFillColor(playerColor);
+    }
+    RectangleShape& getShape() {
+        return shape;
     }
     Vector2f getPosition() const {
         return shape.getPosition();
@@ -170,6 +172,38 @@ public:
         }
     }
 
+    void handlePlayerMovement(const Event& event, Player& player, const RenderWindow& window) {
+        const float speed = 20.0f;
+        const Vector2f& playerPosition = player.getPosition();
+        const Vector2f& playerSize = player.getShape().getSize();
+
+        if (event.key.code == Keyboard::Right && playerPosition.x + playerSize.x < window.getSize().x) {
+            player.setPosition(playerPosition.x + speed, playerPosition.y);
+        }
+        else if (event.key.code == Keyboard::Left && playerPosition.x > 0.0f) {
+            player.setPosition(playerPosition.x - speed, playerPosition.y);
+        }
+        else if (event.key.code == Keyboard::Down && playerPosition.y + playerSize.y < window.getSize().y) {
+            player.setPosition(playerPosition.x, playerPosition.y + speed);
+        }
+        else if (event.key.code == Keyboard::Up && playerPosition.y > 0.0f) {
+            player.setPosition(playerPosition.x, playerPosition.y - speed);
+        }
+    }
+
+    void updatePlayerZoneAndColor() {
+        for (int i = 0; i < 4; ++i) {
+            if (zones[i]->getShape().getGlobalBounds().contains(player.getPosition())) {
+                if (player.getZone() != zones[i]) {
+                    player.setZone(zones[i]);
+                    player.setColorBasedOnZone();
+                }
+
+                break;
+            }
+        }
+    }
+
     void run() {
         while (window.isOpen()) {
             Event event;
@@ -178,30 +212,11 @@ public:
                     window.close();
 
                 if (event.type == Event::KeyPressed) {
-                    if (event.key.code == Keyboard::Right) {
-                        player.setPosition(player.getPosition().x + 10.0f, player.getPosition().y);
-                    }
-                    else if (event.key.code == Keyboard::Left) {
-                        player.setPosition(player.getPosition().x - 10.0f, player.getPosition().y);
-                    }
-                    else if (event.key.code == Keyboard::Down) {
-                        player.setPosition(player.getPosition().x, player.getPosition().y + 10.0f);
-                    }
-                    else if (event.key.code == Keyboard::Up) {
-                        player.setPosition(player.getPosition().x, player.getPosition().y - 10.0f);
-                    }
+                    handlePlayerMovement(event, player, window);
                 }
             }
 
-            for (int i = 0; i < 4; ++i) {
-                if (zones[i]->getShape().getGlobalBounds().contains(player.getPosition())) {
-                    if (player.getZone() != zones[i]) {
-                        player.setZone(zones[i]);
-                        player.setColorBasedOnZone();
-                    }
-                    break;
-                }
-            }
+            updatePlayerZoneAndColor();
 
             window.clear();
 
