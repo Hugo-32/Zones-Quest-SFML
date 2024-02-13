@@ -24,10 +24,14 @@ public:
 };
 
 class BlackZone : public Zone {
+private:
+    Texture texture;
 public:
     BlackZone(float width, float height) {
         color = Color::Black;
         shape.setFillColor(color);
+        /*texture.loadFromFile("background_black.jpg");
+        shape.setTexture(&texture);*/
         shape.setSize(Vector2f(width, height));
     }
 
