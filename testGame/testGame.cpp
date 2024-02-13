@@ -90,7 +90,7 @@ private:
 
 public:
     Player() {
-        shape.setSize(Vector2f(100, 100));
+        shape.setSize(Vector2f(50, 75));
         currentZone = nullptr;
         shape.setFillColor(playerColor);
     }
