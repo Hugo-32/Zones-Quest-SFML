@@ -10,6 +10,7 @@ class Zone {
 protected:
     Color color;
     RectangleShape shape;
+    Texture texture;
 
 public:
     virtual void draw(RenderWindow& window) = 0;
@@ -24,14 +25,12 @@ public:
 };
 
 class BlackZone : public Zone {
-private:
-    Texture texture;
 public:
     BlackZone(float width, float height) {
-        color = Color::Black;
-        shape.setFillColor(color);
-        /*texture.loadFromFile("background_black.jpg");
-        shape.setTexture(&texture);*/
+        //color = Color::Black;
+        //shape.setFillColor(color);
+        texture.loadFromFile("game1.jpg");
+        shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
 
@@ -43,8 +42,8 @@ public:
 class GreenZone : public Zone {
 public:
     GreenZone(float width, float height) {
-        color = Color::Green;
-        shape.setFillColor(color);
+        texture.loadFromFile("game2.jpg");
+        shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
 
@@ -57,8 +56,8 @@ public:
 class BlueZone : public Zone {
 public:
     BlueZone(float width, float height) {
-        color = Color::Blue;
-        shape.setFillColor(color);
+        texture.loadFromFile("game3.jpg");
+        shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
 
@@ -71,8 +70,8 @@ public:
 class YellowZone : public Zone {
 public:
     YellowZone(float width, float height) {
-        color = Color::Yellow;
-        shape.setFillColor(color);
+        texture.loadFromFile("game4.jpg");
+        shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
     }
 
