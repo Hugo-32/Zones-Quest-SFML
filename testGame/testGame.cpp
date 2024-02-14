@@ -2,7 +2,7 @@
 #define ENEMY_COUNT 3
 
 
-
+#include <chrono>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -241,7 +241,7 @@ public:
         
         srand(static_cast<unsigned int>(time(nullptr)));
         
-        Zone * greenZone;
+        Zone * greenZone = nullptr;
         
 
         zones[0] = new BlackZone(zoneWidth, zoneHeight);
@@ -486,8 +486,6 @@ public:
 
 int main()
 {
-    
-
     Game game;
     game.run();
     return 0;
