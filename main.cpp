@@ -50,7 +50,7 @@ public:
     BlackZone(float width, float height) {
         //color = Color::Black;
         //shape.setFillColor(color);
-        texture.loadFromFile("/Users/tsopin/Desktop/c/sfml_test/sfml_test/background1.png");
+        texture.loadFromFile("background1.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 1;
@@ -64,7 +64,7 @@ public:
 class GreenZone : public Zone {
 public:
     GreenZone(float width, float height) {
-        texture.loadFromFile("/Users/tsopin/Desktop/c/sfml_test/sfml_test/background2.png");
+        texture.loadFromFile("background2.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 2;
@@ -79,7 +79,7 @@ public:
 class BlueZone : public Zone {
 public:
     BlueZone(float width, float height) {
-        texture.loadFromFile("/Users/tsopin/Desktop/c/sfml_test/sfml_test/background3.png");
+        texture.loadFromFile("background3.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 3;
@@ -93,7 +93,7 @@ public:
 class YellowZone : public Zone {
 public:
     YellowZone(float width, float height) {
-        texture.loadFromFile("/Users/tsopin/Desktop/c/sfml_test/sfml_test/background4.png");
+        texture.loadFromFile("background4.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 4;
