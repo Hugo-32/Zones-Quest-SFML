@@ -141,21 +141,26 @@ public:
 
 class Player {
 private:
-    RectangleShape shape;
+    //RectangleShape shape;
     Zone* currentZone;
-    Color playerColor;
+    //Color playerColor;
     int direction;
     int hp;
-    
-
-
+    Sprite sprite;
+    Texture texture;
+    IntRect textureRect;
+    int currentSpriteIndex;
+    Clock animationClock;
+    float animationDelay;
 public:
-    Player() {
-        shape.setSize(Vector2f(40, 60));
+    Player() : currentSpriteIndex(0), direction(0), hp(3), animationDelay(0.1f){
+        texture.loadFromFile("image.png");
+        sprite.setTexture(texture);
+        textureRect = IntRect(0, 0, 64, 128);
+        sprite.setTextureRect(textureRect);
+        //shape.setSize(Vector2f(40, 60));
         currentZone = nullptr;
-        shape.setFillColor(playerColor);
-        direction = 0;
-        hp = 3;
+        //shape.setFillColor(playerColor);
     }
     void setHP(int hp) {
         this->hp = hp;
@@ -163,14 +168,14 @@ public:
     int getHP(){
         return this->hp;
     }
-    RectangleShape& getShape() {
-        return shape;
+    Sprite& getSprite() {
+        return sprite;
     }
     Vector2f getPosition() const {
-        return shape.getPosition();
+        return sprite.getPosition();
     }
     void setPosition(float x, float y) {
-        shape.setPosition(x, y);
+        sprite.setPosition(x, y);
     }
     Zone* getZone() const {
         return currentZone;
@@ -180,36 +185,47 @@ public:
     }
 
     void draw(RenderWindow& window) {
-        window.draw(shape);
+        window.draw(sprite);
     }
-    void setColor(Color color) {
-        playerColor = color;
-        shape.setFillColor(playerColor);
-    }
-    void setColorBasedOnZone() {
-        if (currentZone != nullptr) {
-            if (dynamic_cast<BlackZone*>(currentZone) != nullptr) {
-                playerColor = Color::White;
-            }
-            else if (dynamic_cast<BlueZone*>(currentZone) != nullptr) {
-                playerColor = Color::Red;
-            }
-            else if (dynamic_cast<YellowZone*>(currentZone) != nullptr) {
-                playerColor = Color::Transparent;
-            }
-            else if (dynamic_cast<GreenZone*>(currentZone) != nullptr) {
-                playerColor = Color::Yellow;
-            }
-        }
+    //void setColor(Color color) {
+    //    playerColor = color;
+    //    shape.setFillColor(playerColor);
+    //}
+    //void setColorBasedOnZone() {
+    //    if (currentZone != nullptr) {
+    //        if (dynamic_cast<BlackZone*>(currentZone) != nullptr) {
+    //            playerColor = Color::White;
+    //        }
+    //        else if (dynamic_cast<BlueZone*>(currentZone) != nullptr) {
+    //            playerColor = Color::Red;
+    //        }
+    //        else if (dynamic_cast<YellowZone*>(currentZone) != nullptr) {
+    //            playerColor = Color::Transparent;
+    //        }
+    //        else if (dynamic_cast<GreenZone*>(currentZone) != nullptr) {
+    //            playerColor = Color::Yellow;
+    //        }
+    //    }
 
-        shape.setFillColor(playerColor);
-    }
+    //    shape.setFillColor(playerColor);
+    //}
 
     int getDirection() {
         return direction;
     }
     void setDirection(int d) {
-        this->direction = d;
+        direction = d;
+        int row = d - 1;
+        textureRect.left = currentSpriteIndex * 64;
+        textureRect.top = row * 128;
+        sprite.setTextureRect(textureRect);
+    }
+    void updateAnimation() {
+        if (animationClock.getElapsedTime().asSeconds() >= animationDelay) {
+            currentSpriteIndex = (currentSpriteIndex + 1) % 8;
+            setDirection(direction);
+            animationClock.restart();
+        }
     }
 };
 
@@ -286,12 +302,12 @@ public:
                 int posY = rand()%int(greenZone->getShape().getSize().y - ENEMY_SIZE) + greenZone->getShape().getPosition().y;
                 enemies[i].setPosition(posX, posY);
                 col = false;
-                for(int j=0;j<i;j++) {
+     /*           for(int j=0;j<i;j++) {
                     if (checkCollision(enemies[i].getShape(), enemies[j].getShape())) {
                         col = true;
                         break;
                     }
-                }
+                }*/
             }
         }
 
@@ -301,9 +317,9 @@ public:
         timerText.setFillColor(Color::White);
     }
     
-    bool checkCollision(RectangleShape s1, RectangleShape s2) {
+    bool checkCollision(Sprite s1, RectangleShape s2) {
         Vector2f l1 = {s1.getPosition().x, s1.getPosition().y};
-        Vector2f r1 = {s1.getPosition().x + s1.getSize().x, s1.getPosition().y+s1.getSize().y};
+        Vector2f r1 = {s1.getPosition().x + s1.getGlobalBounds().width, s1.getPosition().y+s1.getGlobalBounds().height};
         Vector2f l2 = {s2.getPosition().x, s2.getPosition().y};
         Vector2f r2 = {s2.getPosition().x + s2.getSize().x, s2.getPosition().y+s2.getSize().y};
         
@@ -316,17 +332,17 @@ public:
         
         return true;
     }
-    float findDistance(RectangleShape s1, RectangleShape s2) {
+    float findDistance(Sprite s1, RectangleShape s2) {
         float dx, dy;
         if (s1.getPosition().y > s2.getPosition().y) {
-            dy = fabs(s1.getPosition().y + s1.getSize().y - s2.getPosition().y);
+            dy = fabs(s1.getPosition().y + s1.getGlobalBounds().height - s2.getPosition().y);
         } else {
             dy = fabs(s1.getPosition().y - (s2.getPosition().y + s2.getSize().y));
         }
         if (s1.getPosition().x > s2.getPosition().x) {
             dx = fabs(s1.getPosition().x - (s2.getPosition().x + s2.getSize().x));
         } else {
-            dx = fabs(s1.getPosition().x+s1.getSize().x - s2.getPosition().x);
+            dx = fabs(s1.getPosition().x+s1.getGlobalBounds().width - s2.getPosition().x);
         }
         return sqrt(dx*dx + dy*dy);
         
@@ -336,78 +352,90 @@ public:
     
 
     void handlePlayerMovement(const Event& event, Player& player, const RenderWindow& window) {
-        const float speed = 20.0f;
+        const float speed = 10.0f;
         const Vector2f& playerPosition = player.getPosition();
-        const Vector2f& playerSize = player.getShape().getSize();
+        const FloatRect& playerBounds = player.getSprite().getGlobalBounds();
 
-        if (event.key.code == Keyboard::Right && playerPosition.x + playerSize.x < window.getSize().x) {
-            player.setPosition(playerPosition.x + speed, playerPosition.y);
-            player.setDirection(1);
-        }
-        else if (event.key.code == Keyboard::Left && playerPosition.x > 0.0f) {
-            player.setPosition(playerPosition.x - speed, playerPosition.y);
-            player.setDirection(2);
-        }
-        else if (event.key.code == Keyboard::Down && playerPosition.y + playerSize.y < window.getSize().y) {
-            player.setPosition(playerPosition.x, playerPosition.y + speed);
+        if (event.key.code == Keyboard::Right && playerBounds.left + playerBounds.width < window.getSize().x) {
             player.setDirection(3);
+            player.updateAnimation();
+            player.setPosition(playerPosition.x + speed, playerPosition.y);
         }
-        else if (event.key.code == Keyboard::Up && playerPosition.y > 0.0f) {
-            player.setPosition(playerPosition.x, playerPosition.y - speed);
+        else if (event.key.code == Keyboard::Left && playerBounds.left > 0.0f) {
+            player.setDirection(2);
+            player.updateAnimation();
+            player.setPosition(playerPosition.x - speed, playerPosition.y);
+        }
+        else if (event.key.code == Keyboard::Down && playerBounds.top + playerBounds.height < window.getSize().y) {
+            player.setDirection(1);
+            player.updateAnimation();
+            player.setPosition(playerPosition.x, playerPosition.y + speed);
+        }
+        else if (event.key.code == Keyboard::Up && playerBounds.top > 0.0f) {
             player.setDirection(4);
+            player.updateAnimation();
+            player.setPosition(playerPosition.x, playerPosition.y - speed);
         }
     }
     void updateDirection(const Event& event, Player& player) {
         if (event.key.code == Keyboard::Right) {
-            player.setDirection(1);
+            player.setDirection(3);
         }
         else if (event.key.code == Keyboard::Left) {
             player.setDirection(2);
         }
         else if (event.key.code == Keyboard::Down) {
-            player.setDirection(3);
+            player.setDirection(1);
         }
         else if (event.key.code == Keyboard::Up) {
             player.setDirection(4);
         }
-        
-        
+
+
     }
     
     void moveVec(const Event& event, Player& player, const RenderWindow& window) {
         const float speed = 0.1f;
         const Vector2f& playerPosition = player.getPosition();
-        const Vector2f& playerSize = player.getShape().getSize();
+        const FloatRect& playerBounds = player.getSprite().getGlobalBounds();
+
         switch (player.getDirection()) {
-            case 1:
-                if (playerPosition.x + playerSize.x < window.getSize().x) {
-                    player.setPosition(playerPosition.x + speed, playerPosition.y);
-                }
-                else {
-                    std::cout<<"game over";
-                }
-                break;
-            case 2:
-                if ( playerPosition.x > 0.0f) {
-                    player.setPosition(playerPosition.x - speed, playerPosition.y);
-                } else {
-                    std::cout<<"game over";
-                }
-                break;
-            case 3:
-                if (playerPosition.y + playerSize.y <window.getSize().y){
-                    player.setPosition(playerPosition.x, playerPosition.y + speed);
-                }else {
-                    std::cout<<"game over";
-                }
-                break;
-            case 4:
-                if (playerPosition.y > 0.0f) {
-                    player.setPosition(playerPosition.x, playerPosition.y - speed);
-                } else {
-                    std::cout<<"game over";
-                }
-                break;
+        case 1:
+            if (playerBounds.top + playerBounds.height < window.getSize().y) {
+                player.setPosition(playerPosition.x, playerPosition.y + speed);
+                player.updateAnimation();
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
+        case 2:
+            if (playerBounds.left > 0.0f) {
+                player.setPosition(playerPosition.x - speed, playerPosition.y);
+                player.updateAnimation();
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
+        case 3:
+            if (playerBounds.left + playerBounds.width < window.getSize().x) {
+                player.setPosition(playerPosition.x + speed, playerPosition.y);
+                player.updateAnimation();
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
+        case 4:
+            if (playerBounds.top > 0.0f) {
+                player.setPosition(playerPosition.x, playerPosition.y - speed);
+                player.updateAnimation();
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
         }
     }
 
@@ -416,7 +444,7 @@ public:
             if (zones[i]->getShape().getGlobalBounds().contains(player.getPosition())) {
                 if (player.getZone() != zones[i]) {
                     player.setZone(zones[i]);
-                    player.setColorBasedOnZone();
+                    //player.setColorBasedOnZone();
                 }
 
                 break;
@@ -442,7 +470,7 @@ public:
                     
                     if (event.key.code == Keyboard::Space && player.getZone()->getType() == 2) {
                         for (int i=0; i<ENEMY_COUNT; i++) {
-                            if (findDistance(player.getShape(), enemies[i].getShape()) <= 100) {
+                            if (findDistance(player.getSprite(), enemies[i].getShape()) <= 100) {
                                 enemies[i].setActive(false);
                             }
                         }
@@ -472,7 +500,7 @@ public:
             if (isLoaded && player.getZone()->getType() == 2) {
                 int isCollision = 0;
                 for (int i=0; i<ENEMY_COUNT; i++) {
-                    if (enemies[i].getActive() && checkCollision(player.getShape(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
+                    if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
                         player.setHP(player.getHP()-1);
                         if (player.getHP() == 0) {
                             std::cout<<"game over";
