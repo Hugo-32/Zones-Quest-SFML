@@ -1,4 +1,5 @@
-﻿#include <SFML/Graphics.hpp>
+﻿#include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -11,6 +12,7 @@ protected:
     Color color;
     RectangleShape shape;
     Texture texture;
+    int type;
 
 public:
     virtual void draw(RenderWindow& window) = 0;
@@ -22,6 +24,9 @@ public:
     {
         return shape;
     }
+    int getType() {
+        return type;
+    }
 };
 
 class BlackZone : public Zone {
@@ -32,6 +37,7 @@ public:
         texture.loadFromFile("background1.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
+        type = 1;
     }
 
     void draw(RenderWindow& window) override {
@@ -45,6 +51,7 @@ public:
         texture.loadFromFile("background2.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
+        type = 2;
     }
 
 
@@ -59,6 +66,7 @@ public:
         texture.loadFromFile("background3.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
+        type = 3;
     }
 
     void draw(RenderWindow& window) override {
@@ -72,6 +80,7 @@ public:
         texture.loadFromFile("background4.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
+        type = 4;
     }
 
 
@@ -83,14 +92,17 @@ public:
 class Player {
 private:
     RectangleShape shape;
-    Zone* currentZone;   
+    Zone* currentZone;
     Color playerColor;
+    int direction;
+
 
 public:
     Player() {
         shape.setSize(Vector2f(40, 60));
         currentZone = nullptr;
         shape.setFillColor(playerColor);
+        direction = 0;
     }
     RectangleShape& getShape() {
         return shape;
@@ -133,6 +145,13 @@ public:
 
         shape.setFillColor(playerColor);
     }
+
+    int getDirection() {
+        return direction;
+    }
+    void setDirection(int d) {
+        this->direction = d;
+    }
 };
 
 
@@ -147,12 +166,20 @@ public:
     Game() {
         VideoMode desktop = VideoMode::getDesktopMode();
 
+
+        /*window.create(VideoMode(800,600), "SFML Game");//, Style::Fullscreen);
+        float zoneWidth = 800 / 2.0f;
+        float zoneHeight = 600 / 2.0f;*/
+
         window.create(VideoMode(desktop.width, desktop.height), "SFML Game", Style::Fullscreen);
 
-        srand(static_cast<unsigned int>(time(nullptr)));
 
         float zoneWidth = desktop.width / 2.0f;
         float zoneHeight = desktop.height / 2.0f;
+
+
+        srand(static_cast<unsigned int>(time(nullptr)));
+
 
         zones[0] = new BlackZone(zoneWidth, zoneHeight);
         zones[1] = new GreenZone(zoneWidth, zoneHeight);
@@ -179,15 +206,75 @@ public:
 
         if (event.key.code == Keyboard::Right && playerPosition.x + playerSize.x < window.getSize().x) {
             player.setPosition(playerPosition.x + speed, playerPosition.y);
+            player.setDirection(1);
         }
         else if (event.key.code == Keyboard::Left && playerPosition.x > 0.0f) {
             player.setPosition(playerPosition.x - speed, playerPosition.y);
+            player.setDirection(2);
         }
         else if (event.key.code == Keyboard::Down && playerPosition.y + playerSize.y < window.getSize().y) {
             player.setPosition(playerPosition.x, playerPosition.y + speed);
+            player.setDirection(3);
         }
         else if (event.key.code == Keyboard::Up && playerPosition.y > 0.0f) {
             player.setPosition(playerPosition.x, playerPosition.y - speed);
+            player.setDirection(4);
+        }
+    }
+    void updateDirection(const Event& event, Player& player) {
+        if (event.key.code == Keyboard::Right) {
+            player.setDirection(1);
+        }
+        else if (event.key.code == Keyboard::Left) {
+            player.setDirection(2);
+        }
+        else if (event.key.code == Keyboard::Down) {
+            player.setDirection(3);
+        }
+        else if (event.key.code == Keyboard::Up) {
+            player.setDirection(4);
+        }
+
+
+    }
+
+    void moveVec(const Event& event, Player& player, const RenderWindow& window) {
+        const float speed = 0.1f;
+        const Vector2f& playerPosition = player.getPosition();
+        const Vector2f& playerSize = player.getShape().getSize();
+        switch (player.getDirection()) {
+        case 1:
+            if (playerPosition.x + playerSize.x < window.getSize().x) {
+                player.setPosition(playerPosition.x + speed, playerPosition.y);
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
+        case 2:
+            if (playerPosition.x > 0.0f) {
+                player.setPosition(playerPosition.x - speed, playerPosition.y);
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
+        case 3:
+            if (playerPosition.y + playerSize.y < window.getSize().y) {
+                player.setPosition(playerPosition.x, playerPosition.y + speed);
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
+        case 4:
+            if (playerPosition.y > 0.0f) {
+                player.setPosition(playerPosition.x, playerPosition.y - speed);
+            }
+            else {
+                std::cout << "game over";
+            }
+            break;
         }
     }
 
@@ -205,6 +292,7 @@ public:
     }
 
     void run() {
+        int isLoaded = 0;
         while (window.isOpen()) {
             Event event;
             while (window.pollEvent(event)) {
@@ -212,17 +300,28 @@ public:
                     window.close();
 
                 if (event.type == Event::KeyPressed) {
-                    handlePlayerMovement(event, player, window);
+                    if (player.getZone()->getType() == 3) {
+                        updateDirection(event, player);
+                    }
+                    else {
+                        handlePlayerMovement(event, player, window);
+                    }
                 }
+
             }
 
+
+            if (isLoaded and player.getZone()->getType() == 3) {
+                moveVec(event, player, window);
+            }
             updatePlayerZoneAndColor();
-
             window.clear();
-
             for (int i = 0; i < 4; ++i) {
                 zones[i]->draw(window);
+                isLoaded = 1;
             }
+
+
 
             player.draw(window);
 
@@ -231,9 +330,11 @@ public:
     }
 };
 
-int main() {
+int main()
+{
+
+
     Game game;
     game.run();
-
     return 0;
 }
