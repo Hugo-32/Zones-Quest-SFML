@@ -161,6 +161,9 @@ private:
     Zone* zones[4];
     Player player;
     Color playerColors[4];
+    Clock gameClock;
+    Font timerFont;
+    Text timerText;
 
 public:
     Game() {
@@ -197,6 +200,11 @@ public:
             float y = (i / 2) * zoneHeight;
             zones[i]->setPosition(x, y);
         }
+
+        timerFont.loadFromFile("timerFont.otf");
+        timerText.setFont(timerFont);
+        timerText.setCharacterSize(27);
+        timerText.setFillColor(Color::White);
     }
 
     void handlePlayerMovement(const Event& event, Player& player, const RenderWindow& window) {
@@ -310,6 +318,19 @@ public:
 
             }
 
+            Time elapsedTime = gameClock.getElapsedTime();
+            int timeLeft = max(120 - static_cast<int>(elapsedTime.asSeconds()), 0);
+            FloatRect textRect = timerText.getLocalBounds();
+            timerText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+            timerText.setPosition(Vector2f(window.getSize().x / 2.0f, 10 + textRect.height / 2.0f));
+
+            if (timeLeft <= 0) {
+                cout << "game over";
+                // window.close();
+            }
+
+            string timerString = "Time: " + to_string(timeLeft);
+            timerText.setString(timerString);
 
             if (isLoaded and player.getZone()->getType() == 3) {
                 moveVec(event, player, window);
@@ -324,6 +345,8 @@ public:
 
 
             player.draw(window);
+
+            window.draw(timerText);
 
             window.display();
         }
