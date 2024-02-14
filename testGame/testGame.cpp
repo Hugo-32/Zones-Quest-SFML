@@ -1,11 +1,53 @@
-﻿#include <SFML/Audio.hpp>
+#define ENEMY_SIZE 20
+#define ENEMY_COUNT 3
+
+
+#include <chrono>
+#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <random>
+#include <algorithm>
 
 using namespace sf;
 using namespace std;
+
+
+class Enemy {
+    RectangleShape shape;
+    bool isActive;
+public:
+    Enemy(){
+        shape.setSize(Vector2f(ENEMY_SIZE,ENEMY_SIZE));
+        shape.setFillColor(Color::Red);
+        isActive = true;
+    }
+    Vector2f getPosition() const {
+        return shape.getPosition();
+    }
+    void setPosition(float x, float y) {
+        shape.setPosition(x, y);
+    }
+    void draw(RenderWindow& window) {
+        window.draw(shape);
+    }
+    Vector2f getPosition() {
+        return shape.getPosition();
+    }
+    RectangleShape getShape() {
+        return shape;
+    }
+    bool getActive() {
+        return isActive;
+    }
+    void setActive(bool isActive){
+        this->isActive = isActive;
+    }
+    
+};
+
 
 class Zone {
 protected:
@@ -46,6 +88,7 @@ public:
 };
 
 class GreenZone : public Zone {
+    Enemy enemies[ENEMY_COUNT];
 public:
     GreenZone(float width, float height) {
         texture.loadFromFile("background2.png");
@@ -58,6 +101,8 @@ public:
     void draw(RenderWindow& window) override {
         window.draw(shape);
     }
+    
+    
 };
 
 class BlueZone : public Zone {
@@ -71,6 +116,9 @@ public:
 
     void draw(RenderWindow& window) override {
         window.draw(shape);
+    }
+    void initializeEnemeies() {
+        return;
     }
 };
 
@@ -89,12 +137,16 @@ public:
     }
 };
 
+
+
 class Player {
 private:
     RectangleShape shape;
     Zone* currentZone;
     Color playerColor;
     int direction;
+    int hp;
+    
 
 
 public:
@@ -103,6 +155,13 @@ public:
         currentZone = nullptr;
         shape.setFillColor(playerColor);
         direction = 0;
+        hp = 3;
+    }
+    void setHP(int hp) {
+        this->hp = hp;
+    }
+    int getHP(){
+        return this->hp;
     }
     RectangleShape& getShape() {
         return shape;
@@ -164,9 +223,11 @@ private:
     Clock gameClock;
     Font timerFont;
     Text timerText;
+    Enemy enemies[ENEMY_COUNT];
 
 public:
     Game() {
+        
         VideoMode desktop = VideoMode::getDesktopMode();
 
 
@@ -179,26 +240,59 @@ public:
 
         float zoneWidth = desktop.width / 2.0f;
         float zoneHeight = desktop.height / 2.0f;
-
-
+        
+        
+        
         srand(static_cast<unsigned int>(time(nullptr)));
-
+        
+        Zone * greenZone = nullptr;
+        
 
         zones[0] = new BlackZone(zoneWidth, zoneHeight);
         zones[1] = new GreenZone(zoneWidth, zoneHeight);
         zones[2] = new BlueZone(zoneWidth, zoneHeight);
         zones[3] = new YellowZone(zoneWidth, zoneHeight);
+        
+        
+        
 
         playerColors[0] = Color::Red;
         playerColors[1] = Color::Green;
         playerColors[2] = Color::Blue;
         playerColors[3] = Color::Yellow;
-
-        random_shuffle(begin(zones), end(zones));
+        
+        std::random_device rd;
+        std::mt19937 g(rd());
+        shuffle(begin(zones), end(zones), g);
+        
+        
+        //rundom_shuffle(begin(zones), end(zones));
         for (int i = 0; i < 4; ++i) {
+            std::cout<<zones[i]->getType();
             float x = (i % 2) * zoneWidth;
             float y = (i / 2) * zoneHeight;
             zones[i]->setPosition(x, y);
+            if (zones[i]->getType() == 2) {
+                greenZone = zones[i];
+            }
+        }
+        
+        
+        for (int i=0;i<ENEMY_COUNT;i++) {
+            enemies[i] = Enemy();
+            bool col = true;
+            while (col) {
+                int posX = rand()%int(greenZone->getShape().getSize().x-ENEMY_SIZE) + greenZone->getShape().getPosition().x;
+                int posY = rand()%int(greenZone->getShape().getSize().y - ENEMY_SIZE) + greenZone->getShape().getPosition().y;
+                enemies[i].setPosition(posX, posY);
+                col = false;
+                for(int j=0;j<i;j++) {
+                    if (checkCollision(enemies[i].getShape(), enemies[j].getShape())) {
+                        col = true;
+                        break;
+                    }
+                }
+            }
         }
 
         timerFont.loadFromFile("timerFont.otf");
@@ -206,6 +300,40 @@ public:
         timerText.setCharacterSize(27);
         timerText.setFillColor(Color::White);
     }
+    
+    bool checkCollision(RectangleShape s1, RectangleShape s2) {
+        Vector2f l1 = {s1.getPosition().x, s1.getPosition().y};
+        Vector2f r1 = {s1.getPosition().x + s1.getSize().x, s1.getPosition().y+s1.getSize().y};
+        Vector2f l2 = {s2.getPosition().x, s2.getPosition().y};
+        Vector2f r2 = {s2.getPosition().x + s2.getSize().x, s2.getPosition().y+s2.getSize().y};
+        
+        if (l1.x > r2.x || l2.x > r1.x)
+            return false;
+         
+        if (r1.y < l2.y || r2.y < l1.y)
+            return false;
+         
+        
+        return true;
+    }
+    float findDistance(RectangleShape s1, RectangleShape s2) {
+        float dx, dy;
+        if (s1.getPosition().y > s2.getPosition().y) {
+            dy = fabs(s1.getPosition().y + s1.getSize().y - s2.getPosition().y);
+        } else {
+            dy = fabs(s1.getPosition().y - (s2.getPosition().y + s2.getSize().y));
+        }
+        if (s1.getPosition().x > s2.getPosition().x) {
+            dx = fabs(s1.getPosition().x - (s2.getPosition().x + s2.getSize().x));
+        } else {
+            dx = fabs(s1.getPosition().x+s1.getSize().x - s2.getPosition().x);
+        }
+        return sqrt(dx*dx + dy*dy);
+        
+        
+    }
+    
+    
 
     void handlePlayerMovement(const Event& event, Player& player, const RenderWindow& window) {
         const float speed = 20.0f;
@@ -242,47 +370,44 @@ public:
         else if (event.key.code == Keyboard::Up) {
             player.setDirection(4);
         }
-
-
+        
+        
     }
-
+    
     void moveVec(const Event& event, Player& player, const RenderWindow& window) {
         const float speed = 0.1f;
         const Vector2f& playerPosition = player.getPosition();
         const Vector2f& playerSize = player.getShape().getSize();
         switch (player.getDirection()) {
-        case 1:
-            if (playerPosition.x + playerSize.x < window.getSize().x) {
-                player.setPosition(playerPosition.x + speed, playerPosition.y);
-            }
-            else {
-                std::cout << "game over";
-            }
-            break;
-        case 2:
-            if (playerPosition.x > 0.0f) {
-                player.setPosition(playerPosition.x - speed, playerPosition.y);
-            }
-            else {
-                std::cout << "game over";
-            }
-            break;
-        case 3:
-            if (playerPosition.y + playerSize.y < window.getSize().y) {
-                player.setPosition(playerPosition.x, playerPosition.y + speed);
-            }
-            else {
-                std::cout << "game over";
-            }
-            break;
-        case 4:
-            if (playerPosition.y > 0.0f) {
-                player.setPosition(playerPosition.x, playerPosition.y - speed);
-            }
-            else {
-                std::cout << "game over";
-            }
-            break;
+            case 1:
+                if (playerPosition.x + playerSize.x < window.getSize().x) {
+                    player.setPosition(playerPosition.x + speed, playerPosition.y);
+                }
+                else {
+                    std::cout<<"game over";
+                }
+                break;
+            case 2:
+                if ( playerPosition.x > 0.0f) {
+                    player.setPosition(playerPosition.x - speed, playerPosition.y);
+                } else {
+                    std::cout<<"game over";
+                }
+                break;
+            case 3:
+                if (playerPosition.y + playerSize.y <window.getSize().y){
+                    player.setPosition(playerPosition.x, playerPosition.y + speed);
+                }else {
+                    std::cout<<"game over";
+                }
+                break;
+            case 4:
+                if (playerPosition.y > 0.0f) {
+                    player.setPosition(playerPosition.x, playerPosition.y - speed);
+                } else {
+                    std::cout<<"game over";
+                }
+                break;
         }
     }
 
@@ -301,6 +426,7 @@ public:
 
     void run() {
         int isLoaded = 0;
+        auto lastHitted = chrono::high_resolution_clock::now();
         while (window.isOpen()) {
             Event event;
             while (window.pollEvent(event)) {
@@ -310,14 +436,22 @@ public:
                 if (event.type == Event::KeyPressed) {
                     if (player.getZone()->getType() == 3) {
                         updateDirection(event, player);
-                    }
-                    else {
+                    } else {
                         handlePlayerMovement(event, player, window);
                     }
+                    
+                    if (event.key.code == Keyboard::Space && player.getZone()->getType() == 2) {
+                        for (int i=0; i<ENEMY_COUNT; i++) {
+                            if (findDistance(player.getShape(), enemies[i].getShape()) <= 100) {
+                                enemies[i].setActive(false);
+                            }
+                        }
+                    }
                 }
+            
 
             }
-
+            
             Time elapsedTime = gameClock.getElapsedTime();
             int timeLeft = max(120 - static_cast<int>(elapsedTime.asSeconds()), 0);
             FloatRect textRect = timerText.getLocalBounds();
@@ -331,15 +465,36 @@ public:
 
             string timerString = "Time: " + to_string(timeLeft);
             timerText.setString(timerString);
-
-            if (isLoaded and player.getZone()->getType() == 3) {
+            
+            if (isLoaded && player.getZone()->getType() == 3) {
                 moveVec(event, player, window);
             }
+            if (isLoaded && player.getZone()->getType() == 2) {
+                int isCollision = 0;
+                for (int i=0; i<ENEMY_COUNT; i++) {
+                    if (enemies[i].getActive() && checkCollision(player.getShape(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
+                        player.setHP(player.getHP()-1);
+                        if (player.getHP() == 0) {
+                            std::cout<<"game over";
+                        }
+                        lastHitted = chrono::high_resolution_clock::now();
+                    }
+                }
+                
+            }
+            
+            
             updatePlayerZoneAndColor();
             window.clear();
             for (int i = 0; i < 4; ++i) {
                 zones[i]->draw(window);
                 isLoaded = 1;
+            }
+
+            for (int i=0;i<ENEMY_COUNT;i++) {
+                if (enemies[i].getActive()) {
+                    enemies[i].draw(window);
+                }
             }
 
 
@@ -355,8 +510,6 @@ public:
 
 int main()
 {
-
-
     Game game;
     game.run();
     return 0;
