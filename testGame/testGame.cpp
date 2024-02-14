@@ -1,18 +1,3 @@
-
-//
-// Disclaimer:
-// ----------
-//
-// This code will work only if you selected window, graphics and audio.
-//
-// Note that the "Run Script" build phase will copy the required frameworks
-// or dylibs to your application bundle so you can execute it on any OS X
-// computer.
-//
-// Your resource files (images, sounds, fonts, ...) are also copied to your
-// application bundle. To get the path to these resources, use the helper
-// function `resourcePath()` from ResourcePath.hpp
-//
 #define ENEMY_SIZE 20
 #define ENEMY_COUNT 3
 
@@ -160,6 +145,7 @@ private:
     Zone* currentZone;
     Color playerColor;
     int direction;
+    int hp;
     
 
 public:
@@ -168,8 +154,13 @@ public:
         currentZone = nullptr;
         shape.setFillColor(playerColor);
         direction = 0;
-        std::cout<<shape.getSize().x;
-        std::cout<<shape.getPosition().x;
+        hp = 3;
+    }
+    void setHP(int hp) {
+        this->hp = hp;
+    }
+    int getHP(){
+        return this->hp;
     }
     RectangleShape& getShape() {
         return shape;
@@ -236,7 +227,7 @@ public:
         VideoMode desktop = VideoMode::getDesktopMode();
 
 
-        /* window.create(VideoMode(800,600), "SFML Game");//, Style::Fullscreen);
+        /*window.create(VideoMode(800,600), "SFML Game");//, Style::Fullscreen);
         float zoneWidth = 800 / 2.0f;
         float zoneHeight = 600 / 2.0f;*/
         
@@ -271,7 +262,7 @@ public:
         shuffle(begin(zones), end(zones), g);
         
         
-        //random_shuffle(begin(zones), end(zones));
+        //rundom_shuffle(begin(zones), end(zones));
         for (int i = 0; i < 4; ++i) {
             std::cout<<zones[i]->getType();
             float x = (i % 2) * zoneWidth;
@@ -428,6 +419,7 @@ public:
 
     void run() {
         int isLoaded = 0;
+        auto lastHitted = chrono::high_resolution_clock::now();
         while (window.isOpen()) {
             Event event;
             while (window.pollEvent(event)) {
@@ -458,13 +450,19 @@ public:
                 moveVec(event, player, window);
             }
             if (isLoaded && player.getZone()->getType() == 2) {
+                int isCollision = 0;
                 for (int i=0; i<ENEMY_COUNT; i++) {
-                    if (enemies[i].getActive() && checkCollision(player.getShape(), enemies[i].getShape())) {
-                        std::cout<<"DAMAGE";
-                        
+                    if (enemies[i].getActive() && checkCollision(player.getShape(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
+                        player.setHP(player.getHP()-1);
+                        if (player.getHP() == 0) {
+                            std::cout<<"game over";
+                        }
+                        lastHitted = chrono::high_resolution_clock::now();
                     }
                 }
+                
             }
+            
             
             updatePlayerZoneAndColor();
             window.clear();
