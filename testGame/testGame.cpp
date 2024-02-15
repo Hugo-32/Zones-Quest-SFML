@@ -217,6 +217,7 @@ private:
     Font timerFont;
     Text timerText;
     Text scoreText;
+    Text livesText;
     Enemy enemies[ENEMY_COUNT];
     bool gameOver;
     bool showGameOverScreen;
@@ -327,6 +328,12 @@ public:
         scoreText.setFillColor(Color::White);
         scoreText.setPosition(10, 10);
         scoreText.setString("Score: 0");
+
+        livesText.setFont(timerFont);
+        livesText.setCharacterSize(27);
+        livesText.setFillColor(Color::White);
+        livesText.setString("Lives: 3");
+        livesText.setPosition(window.getSize().x - livesText.getLocalBounds().width - 10, 10);
     }
     
     bool checkCollision(Sprite s1, RectangleShape s2) {
@@ -416,7 +423,7 @@ public:
     }
     
     void moveVec(const Event& event, Player& player, const RenderWindow& window) {
-        const float speed = 0.1f;
+        const float speed = 2.0f;
         const Vector2f& playerPosition = player.getPosition();
         const FloatRect& playerBounds = player.getSprite().getGlobalBounds();
 
@@ -533,6 +540,7 @@ public:
                 for (int i=0; i<ENEMY_COUNT; i++) {
                     if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
                         player.setHP(player.getHP()-1);
+                        livesText.setString("Lives: " + to_string(player.getHP()));
                         if (player.getHP() == 0) {
                             std::cout<<"game over";
                         }
@@ -583,6 +591,7 @@ public:
                 player.draw(window);
                 window.draw(timerText);
                 window.draw(scoreText);
+                window.draw(livesText);
             }
             else
             {
