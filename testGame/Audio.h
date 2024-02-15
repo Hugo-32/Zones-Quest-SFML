@@ -13,6 +13,7 @@ public:
     void playBackgroundMusic();
     void stopBackgroundMusic();
     void playVictorySound();
+    void playTimeIsUp();
 
 private:
     sf::SoundBuffer bufferCoin1, bufferCoin2;

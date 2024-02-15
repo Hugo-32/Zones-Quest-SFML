@@ -76,3 +76,8 @@ void Audio::playVictorySound()
 {
     soundVictory.play();
 }
+
+void Audio::playTimeIsUp()
+{
+    soundHeroDeath.play();
+}

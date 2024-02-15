@@ -645,6 +645,12 @@ public:
             timerText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
             timerText.setPosition(Vector2f(window.getSize().x / 2.0f, 10 + textRect.height / 2.0f));
 
+            if (timeLeft <= 0 && !gameOver && !gameWin) {
+                gameOver = true;
+                gameAudio.playTimeIsUp();
+                gameAudio.stopBackgroundMusic();
+            }
+
             if (timeLeft <= 0 || player.getHP() <= 0) {
                 gameOver = true;
                
