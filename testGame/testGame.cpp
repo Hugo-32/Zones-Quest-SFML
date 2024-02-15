@@ -218,10 +218,12 @@ private:
     Text timerText;
     Text scoreText;
     Enemy enemies[ENEMY_COUNT];
+    bool gameOver;
+    bool showGameOverScreen;
 
 public:
-    Game() {
-        
+    Game() : showGameOverScreen(false) {
+        gameOver = false;
         VideoMode desktop = VideoMode::getDesktopMode();
 
         window.create(VideoMode(desktop.width, desktop.height), "SFML Game", Style::Fullscreen);
@@ -425,7 +427,7 @@ public:
                 player.updateAnimation();
             }
             else {
-                std::cout << "game over";
+                gameOver = true;
             }
             break;
         case 2:
@@ -434,7 +436,7 @@ public:
                 player.updateAnimation();
             }
             else {
-                std::cout << "game over";
+                gameOver = true;
             }
             break;
         case 3:
@@ -443,7 +445,7 @@ public:
                 player.updateAnimation();
             }
             else {
-                std::cout << "game over";
+                gameOver = true;
             }
             break;
         case 4:
@@ -452,7 +454,7 @@ public:
                 player.updateAnimation();
             }
             else {
-                std::cout << "game over";
+                gameOver = true;
             }
             break;
         }
@@ -494,6 +496,16 @@ public:
                             }
                         }
                     }
+                    if (event.key.code == Keyboard::R && gameOver == true)
+                    {
+                        window.close();
+                        Game game;
+                        game.run();
+                    }
+                    if (event.key.code == Keyboard::Escape && gameOver == true)
+                    {
+                        window.close();
+                    }
                 }
             
 
@@ -505,9 +517,9 @@ public:
             timerText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
             timerText.setPosition(Vector2f(window.getSize().x / 2.0f, 10 + textRect.height / 2.0f));
 
-            if (timeLeft <= 0) {
-                cout << "game over";
-                // window.close();
+            if (timeLeft <= 0 || player.getHP() <= 0) {
+                gameOver = true;
+               
             }
 
             string timerString = "Time: " + to_string(timeLeft);
@@ -547,29 +559,73 @@ public:
                 else ++i;
             }
             
-            updatePlayerZoneAndColor();
-            window.clear();
-            for (int i = 0; i < 4; ++i) {
-                zones[i]->draw(window);
-                isLoaded = 1;
-            }
-
-            for (int i=0;i<ENEMY_COUNT;i++) {
-                if (enemies[i].getActive()) {
-                    enemies[i].draw(window);
-                }
-            }
-            //update the sprite frames for the coins
-            for (auto i=coins.begin(); i !=coins.end(); i++)
+            if (!gameOver)
             {
-                (*i).tickSprite();
-                window.draw((*i).getSprite());
+                updatePlayerZoneAndColor();
+                window.clear();
+                for (int i = 0; i < 4; ++i) {
+                    zones[i]->draw(window);
+                    isLoaded = 1;
+                }
+
+                for (int i = 0;i < ENEMY_COUNT;i++) {
+                    if (enemies[i].getActive()) {
+                        enemies[i].draw(window);
+                    }
+                }
+                //update the sprite frames for the coins
+                for (auto i = coins.begin(); i != coins.end(); i++)
+                {
+                    (*i).tickSprite();
+                    window.draw((*i).getSprite());
+                }
+
+                player.draw(window);
+                window.draw(timerText);
+                window.draw(scoreText);
             }
+            else
+            {
+                if (!showGameOverScreen)
+                {
+                    RectangleShape darkScreen(Vector2f(window.getSize().x, window.getSize().y));
+                    darkScreen.setFillColor(Color(0, 0, 0, 150));
+                    window.draw(darkScreen);
 
-            player.draw(window);
+                    Font gameOverFont;
+                    gameOverFont.loadFromFile("timerFont.otf");
 
-            window.draw(timerText);
-            window.draw(scoreText);
+                    Text gameOverText("Game Over", gameOverFont, 50);
+                    gameOverText.setFillColor(Color::White);
+                    FloatRect textRect = gameOverText.getLocalBounds();
+                    gameOverText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                    gameOverText.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f));
+                    window.draw(gameOverText);
+
+                    scoreText.setFont(timerFont);
+                    scoreText.setCharacterSize(30);
+                    scoreText.setString("Total Score: " + to_string(points));
+                    FloatRect scoreTextRect = scoreText.getLocalBounds();
+                    scoreText.setOrigin(scoreTextRect.left + scoreTextRect.width / 2.0f, scoreTextRect.top + scoreTextRect.height / 2.0f);
+                    scoreText.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 50.0f));
+                    window.draw(scoreText);
+
+                    Text restartButton("Restart (Press 'R')", gameOverFont, 30);
+                    restartButton.setFillColor(Color::White);
+                    FloatRect restartButtonRect = restartButton.getLocalBounds();
+                    restartButton.setOrigin(restartButtonRect.left + restartButtonRect.width / 2.0f, restartButtonRect.top + restartButtonRect.height / 2.0f);
+                    restartButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 100.0f));
+                    window.draw(restartButton);
+
+                    Text exitButton("Exit (Press 'Esc')", gameOverFont, 30);
+                    exitButton.setFillColor(Color::White);
+                    FloatRect exitButtonRect = exitButton.getLocalBounds();
+                    exitButton.setOrigin(exitButtonRect.left + exitButtonRect.width / 2.0f, exitButtonRect.top + exitButtonRect.height / 2.0f);
+                    exitButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 150.0f));
+                    window.draw(exitButton);
+                }
+                
+            }
 
             window.display();
         }
