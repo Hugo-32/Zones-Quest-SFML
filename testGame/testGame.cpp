@@ -15,34 +15,94 @@ using namespace sf;
 using namespace std;
 
 class Enemy {
-    RectangleShape shape;
+    Sprite sprite;
     bool isActive;
+    Texture texture;
+    IntRect textureRect;
+    int currentSpriteIndex;
+    Clock animationClock;
+    float animationDelay;
+    int direction;
 public:
-    Enemy(){
-        shape.setSize(Vector2f(ENEMY_SIZE,ENEMY_SIZE));
-        shape.setFillColor(Color::Red);
+    Enemy() : currentSpriteIndex(0), animationDelay(0.1f), direction(0){
+        texture.loadFromFile("Evil.png");
+        sprite.setTexture(texture);
+        textureRect = IntRect(0, 0, 48, 72);
+        sprite.setTextureRect(textureRect);
         isActive = true;
     }
+    void setScale(float scaleX, float scaleY)
+    {
+        sprite.setScale(scaleX, scaleY);
+    }
+        
+    Sprite& getSprite() {
+        return sprite;
+    }
     Vector2f getPosition() const {
-        return shape.getPosition();
+        return sprite.getPosition();
     }
     void setPosition(float x, float y) {
-        shape.setPosition(x, y);
+        sprite.setPosition(x, y);
     }
     void draw(RenderWindow& window) {
-        window.draw(shape);
+        window.draw(sprite);
     }
-    Vector2f getPosition() {
-        return shape.getPosition();
+
+    int getDirection() {
+        return direction;
     }
-    RectangleShape getShape() {
-        return shape;
+    void setDirection(int d) {
+        direction = d;
+        int row = d - 1;
+        textureRect.left = currentSpriteIndex * 48;
+        textureRect.top = row * 72;
+        sprite.setTextureRect(textureRect);
     }
+    void updateAnimation() {
+        if (animationClock.getElapsedTime().asSeconds() >= animationDelay) {
+            currentSpriteIndex = (currentSpriteIndex + 1) % 3;
+            setDirection(direction);
+            animationClock.restart();
+        }
+    }
+
     bool getActive() {
         return isActive;
     }
     void setActive(bool isActive){
         this->isActive = isActive;
+    }
+    
+    void handleEnemyMovement(Vector2f playerPosition) {
+        const float speed = 0.01f;
+        const Vector2f& enemyPosition = this->getPosition();
+        const FloatRect& enemyBounds = this->getSprite().getGlobalBounds();
+        if (fabs(playerPosition.x - enemyPosition.x)>fabs(playerPosition.y-enemyPosition.y)) {
+            if (playerPosition.x > enemyPosition.x) {
+                this->setDirection(3);//right
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x + speed, enemyPosition.y);
+            }
+            else if (playerPosition.x < enemyPosition.x) {
+                this->setDirection(2);//left
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x - speed, enemyPosition.y);
+            }
+        } else {
+            if (playerPosition.y > enemyPosition.y) {
+                this->setDirection(1);//down
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x, enemyPosition.y + speed);
+            
+            }
+            else if (playerPosition.y < enemyPosition.y) {
+                this->setDirection(4);//up
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x, enemyPosition.y - speed);
+                
+            }
+        }
     }
     
 };
@@ -201,6 +261,8 @@ public:
             animationClock.restart();
         }
     }
+    
+    
 };
 
 class Game {
@@ -212,6 +274,7 @@ private:
     //Coin coins[Coin::COIN_AMOUNT];
     int points=0;
     Texture coinTexture;
+    Texture enemyTexture;
     Color playerColors[4];
     Clock gameClock;
     Font timerFont;
@@ -270,19 +333,19 @@ public:
         }
         
         for (int i=0;i<ENEMY_COUNT;i++) {
-            enemies[i] = Enemy();
+            //enemies[i] = Enemy();
             bool col = true;
             while (col) {
-                int posX = rand()%int(greenZone->getShape().getSize().x-ENEMY_SIZE) + greenZone->getShape().getPosition().x;
-                int posY = rand()%int(greenZone->getShape().getSize().y - ENEMY_SIZE) + greenZone->getShape().getPosition().y;
+                int posX = rand()%int(greenZone->getShape().getSize().x-enemies[i].getSprite().getGlobalBounds().width) + greenZone->getShape().getPosition().x;
+                int posY = rand()%int(greenZone->getShape().getSize().y - enemies[i].getSprite().getGlobalBounds().height) + greenZone->getShape().getPosition().y;
                 enemies[i].setPosition(posX, posY);
                 col = false;
-     /*           for(int j=0;j<i;j++) {
-                    if (checkCollision(enemies[i].getShape(), enemies[j].getShape())) {
+                for(int j=0;j<i;j++) {
+                    if (checkCollision(enemies[i].getSprite(), enemies[j].getSprite())) {
                         col = true;
                         break;
                     }
-                }*/
+                }
             }
         }
 
@@ -352,11 +415,11 @@ public:
         livesText.setPosition(window.getSize().x - livesText.getLocalBounds().width - 10, 10);
     }
     
-    bool checkCollision(Sprite s1, RectangleShape s2) {
+    bool checkCollision(Sprite s1, Sprite s2) {
         Vector2f l1 = {s1.getPosition().x, s1.getPosition().y};
         Vector2f r1 = {s1.getPosition().x + s1.getGlobalBounds().width, s1.getPosition().y+s1.getGlobalBounds().height};
         Vector2f l2 = {s2.getPosition().x, s2.getPosition().y};
-        Vector2f r2 = {s2.getPosition().x + s2.getSize().x, s2.getPosition().y+s2.getSize().y};
+        Vector2f r2 = {s2.getPosition().x + s2.getGlobalBounds().width, s2.getPosition().y+s2.getGlobalBounds().height};
         
         if (l1.x > r2.x || l2.x > r1.x)
             return false;
@@ -376,21 +439,12 @@ public:
         return first.intersects(second);
     }
 
-    float findDistance(Sprite s1, RectangleShape s2) {
-        float dx, dy;
-        if (s1.getPosition().y > s2.getPosition().y) {
-            dy = fabs(s1.getPosition().y + s1.getGlobalBounds().height - s2.getPosition().y);
-        } else {
-            dy = fabs(s1.getPosition().y - (s2.getPosition().y + s2.getSize().y));
-        }
-        if (s1.getPosition().x > s2.getPosition().x) {
-            dx = fabs(s1.getPosition().x - (s2.getPosition().x + s2.getSize().x));
-        } else {
-            dx = fabs(s1.getPosition().x+s1.getGlobalBounds().width - s2.getPosition().x);
-        }
-        return sqrt(dx*dx + dy*dy);
-        
-        
+    float findDistance(Sprite s1, Sprite s2) {
+        float x1 = s1.getPosition().x + s1.getGlobalBounds().width/2;
+        float x2 = s2.getPosition().x + s2.getGlobalBounds().width/2;
+        float y1 = s1.getPosition().y + s1.getGlobalBounds().height/2;
+        float y2 = s2.getPosition().y + s2.getGlobalBounds().height/2;
+        return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
     }
     
     
@@ -497,7 +551,7 @@ public:
     }
 
     void run() {
-        player.setScale(2.0f, 2.0f);
+        player.setScale(1.5f, 1.5f);
         int isLoaded = 0;
         auto lastHitted = chrono::high_resolution_clock::now();
         while (window.isOpen()) {
@@ -512,10 +566,9 @@ public:
                     } else {
                         handlePlayerMovement(event, player, window);
                     }
-                    
                     if (event.key.code == Keyboard::Space && player.getZone()->getType() == 2) {
                         for (int i=0; i<ENEMY_COUNT; i++) {
-                            if (findDistance(player.getSprite(), enemies[i].getShape()) <= 100) {
+                            if (findDistance(player.getSprite(), enemies[i].getSprite()) <= 100) {
                                 enemies[i].setActive(false);
                             }
                         }
@@ -565,17 +618,15 @@ public:
                 moveVec(event, player, window);
             }
             if (isLoaded && player.getZone()->getType() == 2) {
-                int isCollision = 0;
                 for (int i=0; i<ENEMY_COUNT; i++) {
-                    if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
+                    if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getSprite()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 3000) {
                         player.setHP(player.getHP()-1);
                         livesTextOutline.setString("Lives: " + to_string(player.getHP()));
                         livesText.setString("Lives: " + to_string(player.getHP()));
-                        if (player.getHP() == 0) {
-                            std::cout<<"game over";
-                        }
+                        std::cout<<"damage";
                         lastHitted = chrono::high_resolution_clock::now();
                     }
+                    enemies[i].handleEnemyMovement(player.getPosition());
                 }
                 
             }
