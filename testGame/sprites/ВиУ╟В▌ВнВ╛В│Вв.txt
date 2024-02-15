@@ -1,0 +1,123 @@
+『RPGツクールMZ』三頭身キャラ素材
+
+『RPGツクールMZ』(©Gotcha Gotcha Games Inc./YOJI OJIMA 2020)に標準収録されている素材(以後、収録素材)のうち、img/characters フォルダにある、キャラクタの歩行グラフィックを改変(リメイク)したものです。
+収録素材の頭身を上げ、サイズを48×48ピクセルから48×72へと変更しています。
+ファイル名は同じなので、プロジェクトのファイルを上書きして使ってください。
+もちろんリネームしても構いません。
+
+関連素材を、ツクール公式フォーラムでも公開・配布しています。
+https://forum.tkool.jp/index.php?threads/4246/
+
+
+=== 簡単な利用規約 ===
+製作者: とんび@鳶嶋工房(tonbi.jp)
+商用・非商用利用・加工後の再配布: クレジット必須
+再配布: NG
+加工: OK
+シリーズ: RPGツクールMZ
+
+
+=== 詳細な利用規約 ===
+使用にあたっては以下の利用規約にしたがってください。
+以下、長く感じるかもしれませんが、あんまりややこしいことは言ってないはず。
+著作権表記がよくわかんなかったら、表記例をそのまんまコピーして使ってください。
+
+本素材は、商用・非商用問わず利用できます。
+素材を利用する作品の内容に制限はありません。
+もちろん作られた作品の内容に、私(とんび@鳶嶋工房(tonbi.jp))は責任を持ちません。
+本素材を使うことによって発生する、いかなる損害も保証しません。
+要するに、ご自分の責任で自由に作品を作ってください。という当たり前のことです。
+
+収録素材の改変なので以下の条件があります。
+ * 『RPGツクールMZ』の正式なライセンスを、お持ちの方のみ使用できます。
+ * ツクールシリーズ以外での使用はできません。
+
+本素材をそのまま再配布することは禁止します。
+ 代わりに、配布サイトのURL( http://tonbi.jp/ あるいは http://tonbi.jp/Game/RPGMakerDLC/ もしくは https://forum.tkool.jp/index.php?threads/4246/ )をご紹介ください。
+ 
+本素材を使用したゲームのスクリーンショットの公開および、動画配信を行う場合に、本素材に関しては著作権表示など必要ありません。
+『RPGツクールMZ』および、各ソフトの利用規約に沿って行ってください。
+つまりソフト製作者が動画配信についての規約を作る場合に、本素材に関しては無視して構いません。
+
+本素材をさらに改変してツクールシリーズで制作するソフトに利用できます。
+* 利用の際は、同梱の説明書やゲーム内の著作権表記メニュー、スタッフロールなど、ユーザーが確認できる箇所に本素材の著作権表記を書いてください。
+
+【本素材を利用(改変も含む)したソフトの表記例】
+素材提供 :とんび@鳶嶋工房(tonbi.jp)
+
+改変した素材を単体で配布して構いません。ただし以下の点を守ってください。
+ * zipなどのアーカイブで配布する場合は同梱の「お読みください.txt」などのファイルに本作の著作権表記を書いてください。
+ * フォーラムやブログなどでは、素材と同ページの説明テキストに書いてください。
+ * 本素材の配布サイトのURL( http://tonbi.jp/ あるいは http://tonbi.jp/Game/RPGMakerDLC/ もしくは https://forum.tkool.jp/index.php?threads/4246/ )も書いてください。
+ * 本素材を元にした改変素材であることを明記ください。
+ * 『RPGツクールMZ』の著作権表記(©Gotcha Gotcha Games Inc./YOJI OJIMA 2020)が必要です。
+
+【本素材を元に改変した場合の表記例】
+この素材は、とんび@鳶嶋工房(tonbi.jp)作の『RPGツクールMZ』三頭身キャラ素材を改変したものです。
+
+
+=== バージョンアップ履歴 ===
+[2023-09-01] 
+manual.html、説明書.html を追加
+charactersフォルダに以下の変更
+	characters/SF_People3.png の赤い二足歩行ロボのズレを修正
+ex_charactersフォルダに以下の変更
+	Soldierのカラーバリエーションに髪色二種を用意
+	SoldierParts.pngを整理
+	BaseParts.png、SoldierArmor.png、SoldierCape.png、DamageSoldierParts.png、SchoolParts.png、SF_DamageParts.png を追加
+[2023-06-03] 
+charactersフォルダに以下のファイルにキャラを追加
+	Damage3.png
+ex_charactersフォルダに以下のファイルを追加
+	Monster2.png
+[2023-04-26] 
+charactersフォルダに以下のファイルを追加
+	Damage1.png
+	Damage2.png
+	Damage3.png
+	SF_Damage1.png
+	SF_Damage2.png
+ex_charactersフォルダに以下のファイルを追加
+	Damage_Soldier.png
+doorsフォルダに以下のファイルを追加
+	!Door1.png
+	!Door2.png
+	!Door3.png
+	!SF_Door.png
+他こまごまとした修正。
+[2022-07-22] Actor2_5の腕バンドが右腕にも付いていたので削除。Actor3_2の後ろ髪抜け。Actor3_4の服の一部抜け。他こまごまとした修正。
+[2022-05-30] Actor2_4の頭上にゴミドットがあったのを削除。
+[2022-03-08] People3_2のスカートが下のパターンにはみ出していたのを削除。
+[2022-02-17] ex_characters/$People2_1.png を追加。Soldier・SoldierParts1・SoldierParts3のドットゴミを除去。
+[2022-02-17] Actor3_1正面・左に剣のつかを追加、Actor_2正面にマントを追加
+他こまごまとした修正。
+charactersフォルダに以下のファイルを追加
+	people5.png
+facesフォルダに以下のファイルを追加
+	ScoolActor1.png
+	ScoolActor2.png
+	ScoolActor3.png
+ex_charactersフォルダを追加し以下のファイルを追加
+	$Demon.png
+	ex1.png
+	ex2.png
+	Maid.png
+	MaidParts.png
+	School_Actor1.png
+	School_Actor2.png
+	School_Actor3.png
+	School_Mob.png
+	SF_ex1.png
+	SF_ex2.png
+	Soldier.png
+	SoldierCV1.png
+	SoldierCV2.png
+	SoldierParts1.png
+	SoldierParts2.png
+	SoldierParts3.png
+[2021-09-07] Evil_1 左右にゴミドットがあったので削除
+[2021-08-05] Actor1_2 正面のマントにドット抜けがあったので修正
+[2020-12-24] 公開
+----
+©Tonbi@Tobishima-Factory 2020-2023
+©Gotcha Gotcha Games Inc./YOJI OJIMA 2020

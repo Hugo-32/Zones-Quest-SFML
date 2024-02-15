@@ -75,7 +75,7 @@ public:
 class BlackZone : public Zone {
 public:
     BlackZone(float width, float height) {
-        texture.loadFromFile("background1.png");
+        texture.loadFromFile("bg1.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 1;
@@ -90,7 +90,7 @@ class GreenZone : public Zone {
     Enemy enemies[ENEMY_COUNT];
 public:
     GreenZone(float width, float height) {
-        texture.loadFromFile("background2.png");
+        texture.loadFromFile("bg2.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 2;
@@ -107,7 +107,7 @@ public:
 class BlueZone : public Zone {
 public:
     BlueZone(float width, float height) {
-        texture.loadFromFile("background3.png");
+        texture.loadFromFile("bg3.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 3;
@@ -124,7 +124,7 @@ public:
 class YellowZone : public Zone {
 public:
     YellowZone(float width, float height) {
-        texture.loadFromFile("background4.png");
+        texture.loadFromFile("bg4.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 4;
@@ -151,11 +151,15 @@ private:
     float animationDelay;
 public:
     Player() : currentSpriteIndex(0), direction(0), hp(3), animationDelay(0.1f){
-        texture.loadFromFile("image.png");
+        texture.loadFromFile("Evil.png");
         sprite.setTexture(texture);
-        textureRect = IntRect(0, 0, 64, 128);
+        textureRect = IntRect(0, 0, 48, 72);
         sprite.setTextureRect(textureRect);
         currentZone = nullptr;
+    }
+    void setScale(float scaleX, float scaleY)
+    {
+        sprite.setScale(scaleX, scaleY);
     }
     void setHP(int hp) {
         this->hp = hp;
@@ -189,13 +193,13 @@ public:
     void setDirection(int d) {
         direction = d;
         int row = d - 1;
-        textureRect.left = currentSpriteIndex * 64;
-        textureRect.top = row * 128;
+        textureRect.left = currentSpriteIndex * 48;
+        textureRect.top = row * 72;
         sprite.setTextureRect(textureRect);
     }
     void updateAnimation() {
         if (animationClock.getElapsedTime().asSeconds() >= animationDelay) {
-            currentSpriteIndex = (currentSpriteIndex + 1) % 8;
+            currentSpriteIndex = (currentSpriteIndex + 1) % 3;
             setDirection(direction);
             animationClock.restart();
         }
@@ -423,7 +427,7 @@ public:
     }
     
     void moveVec(const Event& event, Player& player, const RenderWindow& window) {
-        const float speed = 2.0f;
+        const float speed = 0.1f;
         const Vector2f& playerPosition = player.getPosition();
         const FloatRect& playerBounds = player.getSprite().getGlobalBounds();
 
@@ -481,6 +485,7 @@ public:
     }
 
     void run() {
+        player.setScale(2.0f, 2.0f);
         int isLoaded = 0;
         auto lastHitted = chrono::high_resolution_clock::now();
         while (window.isOpen()) {
