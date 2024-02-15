@@ -10,6 +10,7 @@
 #include <random>
 #include <algorithm>
 #include "Coin.h"
+#include "Audio.h"
 
 using namespace sf;
 using namespace std;
@@ -204,6 +205,7 @@ private:
     int currentSpriteIndex;
     Clock animationClock;
     float animationDelay;
+    bool isPlayerAlive = true;
 public:
     Player() : currentSpriteIndex(0), direction(0), hp(3), animationDelay(0.1f){
         texture.loadFromFile("Evil.png");
@@ -221,6 +223,12 @@ public:
     }
     int getHP(){
         return this->hp;
+    }
+    int getAliveStatus() {
+        return this->isPlayerAlive;
+    }
+    void setAliveStatus() {
+        this->isPlayerAlive = !isPlayerAlive;
     }
     Sprite& getSprite() {
         return sprite;
@@ -286,6 +294,8 @@ private:
     Text livesTextOutline;
     Text scoreTextOutline;
     Enemy enemies[ENEMY_COUNT];
+    Audio gameAudio;
+    bool allEnemiesDefeated = false;
     bool gameOver;
     bool showGameOverScreen;
     bool gameWin;
@@ -503,7 +513,12 @@ public:
                 player.updateAnimation();
             }
             else {
-                gameOver = true;
+                if (player.getAliveStatus()) {
+                    gameAudio.playDamageSound(true);
+                    gameAudio.stopBackgroundMusic();
+                    player.setAliveStatus();
+                    gameOver = true;
+                }
             }
             break;
         case 2:
@@ -512,7 +527,12 @@ public:
                 player.updateAnimation();
             }
             else {
-                gameOver = true;
+                if (player.getAliveStatus()) {
+                    gameAudio.playDamageSound(true);
+                    gameAudio.stopBackgroundMusic();
+                    player.setAliveStatus();
+                    gameOver = true;
+                }
             }
             break;
         case 3:
@@ -521,7 +541,12 @@ public:
                 player.updateAnimation();
             }
             else {
-                gameOver = true;
+                if (player.getAliveStatus()) {
+                    gameAudio.playDamageSound(true);
+                    gameAudio.stopBackgroundMusic();
+                    player.setAliveStatus();
+                    gameOver = true;
+                }
             }
             break;
         case 4:
@@ -530,7 +555,12 @@ public:
                 player.updateAnimation();
             }
             else {
-                gameOver = true;
+                if (player.getAliveStatus()) {
+                    gameAudio.playDamageSound(true);
+                    gameAudio.stopBackgroundMusic();
+                    player.setAliveStatus();
+                    gameOver = true;
+                }
             }
             break;
         }
@@ -550,9 +580,11 @@ public:
     }
 
     void run() {
+        gameAudio.playBackgroundMusic();
         player.setScale(2.0f, 2.0f);
         int isLoaded = 0;
         auto lastHitted = chrono::high_resolution_clock::now();
+        bool enemyKilled = false;
         while (window.isOpen()) {
             Event event;
             while (window.pollEvent(event)) {
@@ -567,8 +599,23 @@ public:
                     }
                     if (event.key.code == Keyboard::Space && player.getZone()->getType() == 2) {
                         for (int i=0; i<ENEMY_COUNT; i++) {
-                            if (findDistance(player.getSprite(), enemies[i].getSprite()) <= 100) {
+                            if (enemies[i].getActive() && findDistance(player.getSprite(), enemies[i].getSprite()) <= 100) {
                                 enemies[i].setActive(false);
+                                gameAudio.playEnemyDamageSound();
+                                enemyKilled = true;
+                                break;
+                            }
+                        }
+                        if (enemyKilled) {
+                            int activeEnemies = 0;
+                            for (int i = 0; i < ENEMY_COUNT; i++) {
+                                if (enemies[i].getActive()) {
+                                    activeEnemies++;
+                                }
+                            }
+                            if (activeEnemies == 0 && !allEnemiesDefeated) {
+                                gameAudio.playLastEnemyDeathSound();
+                                allEnemiesDefeated = true;
                             }
                         }
                     }
@@ -603,8 +650,10 @@ public:
                
             }
 
-            if (coins.empty())
+            if (coins.empty() && !gameWin)
             {
+                gameAudio.playVictorySound();
+                gameAudio.stopBackgroundMusic();
                 gameWin = true;
             }
 
@@ -616,12 +665,19 @@ public:
             if (isLoaded && player.getZone()->getType() == 3) {
                 moveVec(event, player, window);
             }
-            if (isLoaded && player.getZone()->getType() == 2) {
+            if (isLoaded && player.getZone()->getType() == 2 && player.getAliveStatus()) {
                 for (int i=0; i<ENEMY_COUNT; i++) {
                     if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getSprite()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 3000) {
                         player.setHP(player.getHP()-1);
                         livesTextOutline.setString("Lives: " + to_string(player.getHP()));
                         livesText.setString("Lives: " + to_string(player.getHP()));
+                        if (player.getHP() == 0) {
+                            gameAudio.stopBackgroundMusic();
+                            gameAudio.playDamageSound(true);
+                            std::cout << "game over";
+                            player.setAliveStatus();
+                        }
+                        else gameAudio.playDamageSound(false);
                         lastHitted = chrono::high_resolution_clock::now();
                     }
                     enemies[i].handleEnemyMovement(player.getPosition());
@@ -642,6 +698,7 @@ public:
                     scoreTextOutline.setString("Score: " + to_string(points));
                     //Remove the coin from vector and set iterator to the next coin
                     i=coins.erase(i);
+                    gameAudio.playCoinSound();
                 }
                 //otherwise advance the iterator
                 else ++i;
