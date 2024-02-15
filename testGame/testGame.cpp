@@ -17,29 +17,57 @@ using namespace std;
 
 
 class Enemy {
-    RectangleShape shape;
+    Sprite sprite;
     bool isActive;
+    Texture texture;
+    IntRect textureRect;
+    int currentSpriteIndex;
+    Clock animationClock;
+    float animationDelay;
+    int direction;
 public:
-    Enemy(){
-        shape.setSize(Vector2f(ENEMY_SIZE,ENEMY_SIZE));
-        shape.setFillColor(Color::Red);
-        isActive = true;
+    Enemy() : currentSpriteIndex(0), animationDelay(0.1f), direction(0){
+        texture.loadFromFile("/Evil.png");
+        sprite.setTexture(texture);
+        textureRect = IntRect(0, 0, 48, 72);
+        sprite.setTextureRect(textureRect);
+    }
+    void setScale(float scaleX, float scaleY)
+    {
+        sprite.setScale(scaleX, scaleY);
+    }
+        
+    Sprite& getSprite() {
+        return sprite;
     }
     Vector2f getPosition() const {
-        return shape.getPosition();
+        return sprite.getPosition();
     }
     void setPosition(float x, float y) {
-        shape.setPosition(x, y);
+        sprite.setPosition(x, y);
     }
     void draw(RenderWindow& window) {
-        window.draw(shape);
+        window.draw(sprite);
     }
-    Vector2f getPosition() {
-        return shape.getPosition();
+
+    int getDirection() {
+        return direction;
     }
-    RectangleShape getShape() {
-        return shape;
+    void setDirection(int d) {
+        direction = d;
+        int row = d - 1;
+        textureRect.left = currentSpriteIndex * 48;
+        textureRect.top = row * 72;
+        sprite.setTextureRect(textureRect);
     }
+    void updateAnimation() {
+        if (animationClock.getElapsedTime().asSeconds() >= animationDelay) {
+            currentSpriteIndex = (currentSpriteIndex + 1) % 3;
+            setDirection(direction);
+            animationClock.restart();
+        }
+    }
+
     bool getActive() {
         return isActive;
     }
@@ -216,13 +244,14 @@ private:
     //Coin coins[Coin::COIN_AMOUNT];
     int points=0;
     Texture coinTexture;
+    Texture enemyTexture;
     Color playerColors[4];
     Clock gameClock;
     Font timerFont;
     Text timerText;
     Text scoreText;
     Text livesText;
-    Enemy enemies[ENEMY_COUNT];
+    Enemy enemies[ENEMY_SIZE];
     bool gameOver;
     bool showGameOverScreen;
 
@@ -273,7 +302,6 @@ public:
             }
         }
         
-        
         for (int i=0;i<ENEMY_COUNT;i++) {
             enemies[i] = Enemy();
             bool col = true;
@@ -282,12 +310,12 @@ public:
                 int posY = rand()%int(greenZone->getShape().getSize().y - ENEMY_SIZE) + greenZone->getShape().getPosition().y;
                 enemies[i].setPosition(posX, posY);
                 col = false;
-     /*           for(int j=0;j<i;j++) {
-                    if (checkCollision(enemies[i].getShape(), enemies[j].getShape())) {
+                for(int j=0;j<i;j++) {
+                    if (checkCollision(enemies[i].getSprite(), enemies[j].getSprite())) {
                         col = true;
                         break;
                     }
-                }*/
+                }
             }
         }
 
@@ -321,7 +349,7 @@ public:
             coins.push_back(tmpcoin);
         }
 
-         timerFont.loadFromFile("timerFont.otf");
+        timerFont.loadFromFile("timerFont.otf");
         timerText.setFont(timerFont);
         timerText.setCharacterSize(27);
         timerText.setFillColor(Color::White);
@@ -340,11 +368,11 @@ public:
         livesText.setPosition(window.getSize().x - livesText.getLocalBounds().width - 10, 10);
     }
     
-    bool checkCollision(Sprite s1, RectangleShape s2) {
+    bool checkCollision(Sprite s1, Sprite s2) {
         Vector2f l1 = {s1.getPosition().x, s1.getPosition().y};
         Vector2f r1 = {s1.getPosition().x + s1.getGlobalBounds().width, s1.getPosition().y+s1.getGlobalBounds().height};
         Vector2f l2 = {s2.getPosition().x, s2.getPosition().y};
-        Vector2f r2 = {s2.getPosition().x + s2.getSize().x, s2.getPosition().y+s2.getSize().y};
+        Vector2f r2 = {s2.getPosition().x + s2.getGlobalBounds().width, s2.getPosition().y+s2.getGlobalBounds().height};
         
         if (l1.x > r2.x || l2.x > r1.x)
             return false;
@@ -364,21 +392,12 @@ public:
         return first.intersects(second);
     }
 
-    float findDistance(Sprite s1, RectangleShape s2) {
-        float dx, dy;
-        if (s1.getPosition().y > s2.getPosition().y) {
-            dy = fabs(s1.getPosition().y + s1.getGlobalBounds().height - s2.getPosition().y);
-        } else {
-            dy = fabs(s1.getPosition().y - (s2.getPosition().y + s2.getSize().y));
-        }
-        if (s1.getPosition().x > s2.getPosition().x) {
-            dx = fabs(s1.getPosition().x - (s2.getPosition().x + s2.getSize().x));
-        } else {
-            dx = fabs(s1.getPosition().x+s1.getGlobalBounds().width - s2.getPosition().x);
-        }
-        return sqrt(dx*dx + dy*dy);
-        
-        
+    float findDistance(Sprite s1, Sprite s2) {
+        float x1 = s1.getPosition().x + s1.getGlobalBounds().width/2;
+        float x2 = s2.getPosition().x + s2.getGlobalBounds().width/2;
+        float y1 = s1.getPosition().y + s1.getGlobalBounds().height/2;
+        float y2 = s2.getPosition().y + s2.getGlobalBounds().height/2;
+        return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
     }
     
     
@@ -500,10 +519,9 @@ public:
                     } else {
                         handlePlayerMovement(event, player, window);
                     }
-                    
                     if (event.key.code == Keyboard::Space && player.getZone()->getType() == 2) {
                         for (int i=0; i<ENEMY_COUNT; i++) {
-                            if (findDistance(player.getSprite(), enemies[i].getShape()) <= 100) {
+                            if (findDistance(player.getSprite(), enemies[i].getSprite()) <= 200) {
                                 enemies[i].setActive(false);
                             }
                         }
@@ -541,14 +559,11 @@ public:
                 moveVec(event, player, window);
             }
             if (isLoaded && player.getZone()->getType() == 2) {
-                int isCollision = 0;
                 for (int i=0; i<ENEMY_COUNT; i++) {
-                    if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
+                    if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getSprite()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 3000) {
                         player.setHP(player.getHP()-1);
                         livesText.setString("Lives: " + to_string(player.getHP()));
-                        if (player.getHP() == 0) {
-                            std::cout<<"game over";
-                        }
+                        std::cout<<"damage";
                         lastHitted = chrono::high_resolution_clock::now();
                     }
                 }
