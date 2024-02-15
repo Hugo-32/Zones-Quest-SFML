@@ -179,7 +179,9 @@ public:
     }
 
     void draw(RenderWindow& window) {
-        window.draw(sprite);
+        if (currentZone && currentZone->getType() != 4) {
+            window.draw(sprite);
+        }
     }
 
     int getDirection() {
