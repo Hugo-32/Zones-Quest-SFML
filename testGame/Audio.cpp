@@ -52,6 +52,7 @@ void Audio::playCoinSound()
 void Audio::playDamageSound(bool fatal)
 {
     if (fatal) {
+        soundHeroDamage.setBuffer(bufferHeroDamage);
         soundHeroDeath.play();
         soundHeroDamage.play();
     }
