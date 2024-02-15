@@ -588,7 +588,7 @@ public:
             }
             
             Time elapsedTime = gameClock.getElapsedTime();
-            int timeLeft = max(120 - static_cast<int>(elapsedTime.asSeconds()), 0);
+            int timeLeft = max(80 - static_cast<int>(elapsedTime.asSeconds()), 0);
 
             FloatRect textRectOutline = timerTextOutline.getLocalBounds();
             timerTextOutline.setOrigin(textRectOutline.left + textRectOutline.width / 2.0f, textRectOutline.top + textRectOutline.height / 2.0f);
