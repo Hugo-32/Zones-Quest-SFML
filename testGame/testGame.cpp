@@ -316,8 +316,11 @@ public:
                 }*/
             }
         }
-        sf::IntRect coinZone = sf::IntRect(0,0, desktop.width - Coin::DEFAULT_COIN_RECT_WIDTH, desktop.height - Coin::DEFAULT_COIN_RECT_HEIGHT);
+        //Load coins texture
         coinTexture.loadFromFile("coin1_16x16.png");
+        //The zone in which coins will be scattered
+        sf::IntRect coinZone = sf::IntRect(0,0, desktop.width - Coin::DEFAULT_COIN_RECT_WIDTH, desktop.height - Coin::DEFAULT_COIN_RECT_HEIGHT);
+        //Scatter the coins across all map
         for (int i=0; i<Coin::GENERAL_COIN_AMOUNT; i++)
         {
             Coin tmpcoin(coinTexture);
@@ -325,6 +328,7 @@ public:
             tmpcoin.getSprite().setScale(Coin::DEFAULT_COIN_SCALE, Coin::DEFAULT_COIN_SCALE);
             coins.push_back(tmpcoin);
         }
+        //Find the invisibility zone
         int blackZoneIndex=0;
         for (int i = 0; i < 4; i++)
         {
@@ -334,7 +338,9 @@ public:
                 break;
             }
         }
+        //Update coinZone to the invisibility zone bounds
         coinZone = sf::IntRect(zones[blackZoneIndex]->getShape().getPosition().x, zones[blackZoneIndex]->getShape().getPosition().y,int(zones[blackZoneIndex]->getShape().getSize().x) - Coin::DEFAULT_COIN_RECT_WIDTH, int(zones[blackZoneIndex]->getShape().getSize().y) - Coin::DEFAULT_COIN_RECT_HEIGHT);
+        //Scatter the coins in the invisibility zone
         for (int i = 0; i < Coin::INVISIBILITY_COIN_AMOUNT; i++)
         {
             Coin tmpcoin(coinTexture);
@@ -348,6 +354,7 @@ public:
         timerText.setCharacterSize(27);
         timerText.setFillColor(Color::White);
 
+        //Set the starting text
         scoreText.setFont(timerFont);
         scoreText.setCharacterSize(27);
         scoreText.setFillColor(Color::White);
@@ -371,6 +378,9 @@ public:
         return true;
     }
 
+    /// <summary>
+    /// Overload the checkCollision using the default SFML method
+    /// </summary>
     bool checkCollision(sf::FloatRect first, sf::FloatRect second)
     {
         return first.intersects(second);
@@ -555,14 +565,20 @@ public:
                 
             }
             
+            //Picking up the coins check
             for (auto i = coins.begin(); i != coins.end();)
             {
+                //Check for collision with any coin
                 if (checkCollision(player.getSprite().getGlobalBounds(), (*i).getSprite().getGlobalBounds()))
                 {
+                    //Add points for picking up the coin
                     points += (*i).getValue();
+                    //Update the Score string
                     scoreText.setString("Score: " + to_string(points));
+                    //Remove the coin from vector and set iterator to the next coin
                     i=coins.erase(i);
                 }
+                //otherwise advance the iterator
                 else ++i;
             }
             
@@ -578,7 +594,7 @@ public:
                     enemies[i].draw(window);
                 }
             }
-
+            //update the sprite frames for the coins
             for (auto i=coins.begin(); i !=coins.end(); i++)
             {
                 (*i).tickSprite();
