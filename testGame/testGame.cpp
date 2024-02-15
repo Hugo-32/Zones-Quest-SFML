@@ -25,7 +25,7 @@ class Enemy {
     int direction;
 public:
     Enemy() : currentSpriteIndex(0), animationDelay(0.1f), direction(0){
-        texture.loadFromFile("Evil.png");
+        texture.loadFromFile("monster.png");
         sprite.setTexture(texture);
         textureRect = IntRect(0, 0, 48, 72);
         sprite.setTextureRect(textureRect);
@@ -147,7 +147,7 @@ class GreenZone : public Zone {
     Enemy enemies[ENEMY_COUNT];
 public:
     GreenZone(float width, float height) {
-        texture.loadFromFile("bg2.png");
+        texture.loadFromFile("bg4.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 2;
@@ -164,7 +164,7 @@ public:
 class BlueZone : public Zone {
 public:
     BlueZone(float width, float height) {
-        texture.loadFromFile("bg3.png");
+        texture.loadFromFile("bg2.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 3;
@@ -181,7 +181,7 @@ public:
 class YellowZone : public Zone {
 public:
     YellowZone(float width, float height) {
-        texture.loadFromFile("bg4.png");
+        texture.loadFromFile("bg3.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
         type = 4;
@@ -323,7 +323,6 @@ public:
         
         //rundom_shuffle(begin(zones), end(zones));
         for (int i = 0; i < 4; ++i) {
-            std::cout<<zones[i]->getType();
             float x = (i % 2) * zoneWidth;
             float y = (i / 2) * zoneHeight;
             zones[i]->setPosition(x, y);
@@ -551,7 +550,7 @@ public:
     }
 
     void run() {
-        player.setScale(1.5f, 1.5f);
+        player.setScale(2.0f, 2.0f);
         int isLoaded = 0;
         auto lastHitted = chrono::high_resolution_clock::now();
         while (window.isOpen()) {
@@ -623,7 +622,6 @@ public:
                         player.setHP(player.getHP()-1);
                         livesTextOutline.setString("Lives: " + to_string(player.getHP()));
                         livesText.setString("Lives: " + to_string(player.getHP()));
-                        std::cout<<"damage";
                         lastHitted = chrono::high_resolution_clock::now();
                     }
                     enemies[i].handleEnemyMovement(player.getPosition());
@@ -660,6 +658,7 @@ public:
 
                 for (int i = 0;i < ENEMY_COUNT;i++) {
                     if (enemies[i].getActive()) {
+                        enemies[i].setScale(2.0f, 2.0f);
                         enemies[i].draw(window);
                     }
                 }

@@ -1,6 +1,6 @@
 #include "Coin.h"
 const float Coin::DEFAULT_COIN_ANIMATION_DELAY = 0.1f;
-const float Coin::DEFAULT_COIN_SCALE = 2;
+const float Coin::DEFAULT_COIN_SCALE = 2.5f;
 
 Coin::Coin() :
 	value(DEFAULT_COIN_VALUE),
