@@ -10,6 +10,7 @@
 #include <ctime>
 #include <random>
 #include <algorithm>
+#include "Coin.h"
 
 using namespace sf;
 using namespace std;
@@ -235,10 +236,15 @@ private:
     RenderWindow window;
     Zone* zones[4];
     Player player;
+    vector<Coin> coins;
+    //Coin coins[Coin::COIN_AMOUNT];
+    int points=0;
+    Texture coinTexture;
     Color playerColors[4];
     Clock gameClock;
     Font timerFont;
     Text timerText;
+    Text scoreText;
     Enemy enemies[ENEMY_COUNT];
 
 public:
@@ -310,11 +316,50 @@ public:
                 }*/
             }
         }
+        //Load coins texture
+        coinTexture.loadFromFile("coin1_16x16.png");
+        //The zone in which coins will be scattered
+        sf::IntRect coinZone = sf::IntRect(0,0, desktop.width - Coin::DEFAULT_COIN_RECT_WIDTH, desktop.height - Coin::DEFAULT_COIN_RECT_HEIGHT);
+        //Scatter the coins across all map
+        for (int i=0; i<Coin::GENERAL_COIN_AMOUNT; i++)
+        {
+            Coin tmpcoin(coinTexture);
+            tmpcoin.getSprite().setPosition(rand() % coinZone.width+coinZone.left, rand() % coinZone.height+coinZone.top);
+            tmpcoin.getSprite().setScale(Coin::DEFAULT_COIN_SCALE, Coin::DEFAULT_COIN_SCALE);
+            coins.push_back(tmpcoin);
+        }
+        //Find the invisibility zone
+        int blackZoneIndex=0;
+        for (int i = 0; i < 4; i++)
+        {
+            if (zones[i]->getType() == 4)
+            {
+                blackZoneIndex = i;
+                break;
+            }
+        }
+        //Update coinZone to the invisibility zone bounds
+        coinZone = sf::IntRect(zones[blackZoneIndex]->getShape().getPosition().x, zones[blackZoneIndex]->getShape().getPosition().y,int(zones[blackZoneIndex]->getShape().getSize().x) - Coin::DEFAULT_COIN_RECT_WIDTH, int(zones[blackZoneIndex]->getShape().getSize().y) - Coin::DEFAULT_COIN_RECT_HEIGHT);
+        //Scatter the coins in the invisibility zone
+        for (int i = 0; i < Coin::INVISIBILITY_COIN_AMOUNT; i++)
+        {
+            Coin tmpcoin(coinTexture);
+            tmpcoin.getSprite().setPosition(rand() % coinZone.width + coinZone.left, rand() % coinZone.height + coinZone.top);
+            tmpcoin.getSprite().setScale(Coin::DEFAULT_COIN_SCALE, Coin::DEFAULT_COIN_SCALE);
+            coins.push_back(tmpcoin);
+        }
 
-        timerFont.loadFromFile("timerFont.otf");
+         timerFont.loadFromFile("timerFont.otf");
         timerText.setFont(timerFont);
         timerText.setCharacterSize(27);
         timerText.setFillColor(Color::White);
+
+        //Set the starting text
+        scoreText.setFont(timerFont);
+        scoreText.setCharacterSize(27);
+        scoreText.setFillColor(Color::White);
+        scoreText.setPosition(10, 10);
+        scoreText.setString("Score: 0");
     }
     
     bool checkCollision(Sprite s1, RectangleShape s2) {
@@ -332,6 +377,15 @@ public:
         
         return true;
     }
+
+    /// <summary>
+    /// Overload the checkCollision using the default SFML method
+    /// </summary>
+    bool checkCollision(sf::FloatRect first, sf::FloatRect second)
+    {
+        return first.intersects(second);
+    }
+
     float findDistance(Sprite s1, RectangleShape s2) {
         float dx, dy;
         if (s1.getPosition().y > s2.getPosition().y) {
@@ -511,6 +565,22 @@ public:
                 
             }
             
+            //Picking up the coins check
+            for (auto i = coins.begin(); i != coins.end();)
+            {
+                //Check for collision with any coin
+                if (checkCollision(player.getSprite().getGlobalBounds(), (*i).getSprite().getGlobalBounds()))
+                {
+                    //Add points for picking up the coin
+                    points += (*i).getValue();
+                    //Update the Score string
+                    scoreText.setString("Score: " + to_string(points));
+                    //Remove the coin from vector and set iterator to the next coin
+                    i=coins.erase(i);
+                }
+                //otherwise advance the iterator
+                else ++i;
+            }
             
             updatePlayerZoneAndColor();
             window.clear();
@@ -524,12 +594,17 @@ public:
                     enemies[i].draw(window);
                 }
             }
-
-
+            //update the sprite frames for the coins
+            for (auto i=coins.begin(); i !=coins.end(); i++)
+            {
+                (*i).tickSprite();
+                window.draw((*i).getSprite());
+            }
 
             player.draw(window);
 
             window.draw(timerText);
+            window.draw(scoreText);
 
             window.display();
         }
