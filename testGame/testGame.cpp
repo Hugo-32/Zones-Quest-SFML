@@ -31,6 +31,7 @@ public:
         sprite.setTexture(texture);
         textureRect = IntRect(0, 0, 48, 72);
         sprite.setTextureRect(textureRect);
+        isActive = true;
     }
     void setScale(float scaleX, float scaleY)
     {
@@ -303,7 +304,6 @@ public:
         }
         
         for (int i=0;i<ENEMY_COUNT;i++) {
-            enemies[i] = Enemy();
             bool col = true;
             while (col) {
                 int posX = rand()%int(greenZone->getShape().getSize().x-ENEMY_SIZE) + greenZone->getShape().getPosition().x;
