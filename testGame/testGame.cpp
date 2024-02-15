@@ -81,25 +81,21 @@ public:
         const FloatRect& enemyBounds = this->getSprite().getGlobalBounds();
         if (fabs(playerPosition.x - enemyPosition.x)>fabs(playerPosition.y-enemyPosition.y)) {
             if (playerPosition.x > enemyPosition.x) {
-                this->setDirection(3);//right
-                //this->updateAnimation();
+                this->setDirection(3);
                 this->setPosition(enemyPosition.x + speed, enemyPosition.y);
             }
             else if (playerPosition.x < enemyPosition.x) {
-                this->setDirection(2);//left
-                //this->updateAnimation();
+                this->setDirection(2);
                 this->setPosition(enemyPosition.x - speed, enemyPosition.y);
             }
         } else {
             if (playerPosition.y > enemyPosition.y) {
-                this->setDirection(1);//down
-                //this->updateAnimation();
+                this->setDirection(1);
                 this->setPosition(enemyPosition.x, enemyPosition.y + speed);
             
             }
             else if (playerPosition.y < enemyPosition.y) {
-                this->setDirection(4);//up
-                //this->updateAnimation();
+                this->setDirection(4);
                 this->setPosition(enemyPosition.x, enemyPosition.y - speed);
                 
             }
@@ -279,7 +275,6 @@ private:
     Zone* zones[4];
     Player player;
     vector<Coin> coins;
-    //Coin coins[Coin::COIN_AMOUNT];
     int points=0;
     Texture coinTexture;
     Texture enemyTexture;
@@ -330,8 +325,6 @@ public:
         std::mt19937 g(rd());
         shuffle(begin(zones), end(zones), g);
         
-        
-        //rundom_shuffle(begin(zones), end(zones));
         for (int i = 0; i < 4; ++i) {
             float x = (i % 2) * zoneWidth;
             float y = (i / 2) * zoneHeight;
@@ -342,7 +335,6 @@ public:
         }
         
         for (int i=0;i<ENEMY_COUNT;i++) {
-            //enemies[i] = Enemy();
             bool col = true;
             while (col) {
                 int posX = rand()%int(greenZone->getShape().getSize().x-enemies[i].getSprite().getGlobalBounds().width) + greenZone->getShape().getPosition().x;
@@ -571,7 +563,6 @@ public:
             if (zones[i]->getShape().getGlobalBounds().contains(player.getPosition())) {
                 if (player.getZone() != zones[i]) {
                     player.setZone(zones[i]);
-                    //player.setColorBasedOnZone();
                 }
 
                 break;
@@ -635,7 +626,7 @@ public:
             }
             
             Time elapsedTime = gameClock.getElapsedTime();
-            int timeLeft = max(80 - static_cast<int>(elapsedTime.asSeconds()), 0);
+            int timeLeft = max(100 - static_cast<int>(elapsedTime.asSeconds()), 0);
 
             FloatRect textRectOutline = timerTextOutline.getLocalBounds();
             timerTextOutline.setOrigin(textRectOutline.left + textRectOutline.width / 2.0f, textRectOutline.top + textRectOutline.height / 2.0f);
@@ -680,7 +671,6 @@ public:
                         if (player.getHP() == 0) {
                             gameAudio.stopBackgroundMusic();
                             gameAudio.playDamageSound(true);
-                            std::cout << "game over";
                             player.setAliveStatus();
                         }
                         else gameAudio.playDamageSound(false);
