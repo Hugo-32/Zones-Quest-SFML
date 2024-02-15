@@ -1,7 +1,6 @@
 #define ENEMY_SIZE 20
 #define ENEMY_COUNT 3
 
-
 #include <chrono>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
@@ -14,7 +13,6 @@
 
 using namespace sf;
 using namespace std;
-
 
 class Enemy {
     RectangleShape shape;
@@ -48,7 +46,6 @@ public:
     }
     
 };
-
 
 class Zone {
 protected:
@@ -136,8 +133,6 @@ public:
     }
 };
 
-
-
 class Player {
 private:
     Zone* currentZone;
@@ -206,7 +201,6 @@ public:
     }
 };
 
-
 class Game {
 private:
     RenderWindow window;
@@ -219,38 +213,38 @@ private:
     Color playerColors[4];
     Clock gameClock;
     Font timerFont;
+    Font timerFontOutline;
     Text timerText;
+    Text timerTextOutline;
     Text scoreText;
     Text livesText;
+    Text livesTextOutline;
+    Text scoreTextOutline;
     Enemy enemies[ENEMY_COUNT];
     bool gameOver;
     bool showGameOverScreen;
+    bool gameWin;
+    bool showGameWinScreen;
 
 public:
-    Game() : showGameOverScreen(false) {
+    Game() : showGameOverScreen(false), showGameWinScreen(false) {
         gameOver = false;
+        gameWin = false;
         VideoMode desktop = VideoMode::getDesktopMode();
 
         window.create(VideoMode(desktop.width, desktop.height), "SFML Game", Style::Fullscreen);
 
-
         float zoneWidth = desktop.width / 2.0f;
         float zoneHeight = desktop.height / 2.0f;
-        
-        
         
         srand(static_cast<unsigned int>(time(nullptr)));
         
         Zone * greenZone = nullptr;
         
-
         zones[0] = new BlackZone(zoneWidth, zoneHeight);
         zones[1] = new GreenZone(zoneWidth, zoneHeight);
         zones[2] = new BlueZone(zoneWidth, zoneHeight);
         zones[3] = new YellowZone(zoneWidth, zoneHeight);
-        
-        
-        
 
         playerColors[0] = Color::Red;
         playerColors[1] = Color::Green;
@@ -272,7 +266,6 @@ public:
                 greenZone = zones[i];
             }
         }
-        
         
         for (int i=0;i<ENEMY_COUNT;i++) {
             enemies[i] = Enemy();
@@ -321,20 +314,37 @@ public:
             coins.push_back(tmpcoin);
         }
 
-         timerFont.loadFromFile("timerFont.otf");
+
+        timerFontOutline.loadFromFile("timerFont.otf");
+        timerTextOutline.setFont(timerFontOutline);
+        timerTextOutline.setCharacterSize(37);
+        timerTextOutline.setFillColor(Color::Black);
+
+        timerFont.loadFromFile("timerFont.otf");
         timerText.setFont(timerFont);
-        timerText.setCharacterSize(27);
+        timerText.setCharacterSize(35);
         timerText.setFillColor(Color::White);
 
+        scoreTextOutline.setFont(timerFont);
+        scoreTextOutline.setCharacterSize(37);
+        scoreTextOutline.setFillColor(Color::Black);
+        scoreTextOutline.setPosition(11, 12);
+        scoreTextOutline.setString("Score: 0");
 
         scoreText.setFont(timerFont);
-        scoreText.setCharacterSize(27);
+        scoreText.setCharacterSize(35);
         scoreText.setFillColor(Color::White);
         scoreText.setPosition(10, 10);
         scoreText.setString("Score: 0");
 
+        livesTextOutline.setFont(timerFont);
+        livesTextOutline.setCharacterSize(37);
+        livesTextOutline.setFillColor(Color::Black);
+        livesTextOutline.setString("Lives: 3");
+        livesTextOutline.setPosition(window.getSize().x - livesTextOutline.getLocalBounds().width - 5, 12);
+
         livesText.setFont(timerFont);
-        livesText.setCharacterSize(27);
+        livesText.setCharacterSize(35);
         livesText.setFillColor(Color::White);
         livesText.setString("Lives: 3");
         livesText.setPosition(window.getSize().x - livesText.getLocalBounds().width - 10, 10);
@@ -508,15 +518,15 @@ public:
                             }
                         }
                     }
-                    if (event.key.code == Keyboard::R && gameOver == true)
+                    if (event.key.code == Keyboard::Escape)
+                    {
+                        window.close();
+                    }
+                    if (event.key.code == Keyboard::R && (gameOver == true || gameWin == true))
                     {
                         window.close();
                         Game game;
                         game.run();
-                    }
-                    if (event.key.code == Keyboard::Escape && gameOver == true)
-                    {
-                        window.close();
                     }
                 }
             
@@ -525,6 +535,11 @@ public:
             
             Time elapsedTime = gameClock.getElapsedTime();
             int timeLeft = max(120 - static_cast<int>(elapsedTime.asSeconds()), 0);
+
+            FloatRect textRectOutline = timerTextOutline.getLocalBounds();
+            timerTextOutline.setOrigin(textRectOutline.left + textRectOutline.width / 2.0f, textRectOutline.top + textRectOutline.height / 2.0f);
+            timerTextOutline.setPosition(Vector2f(3 + window.getSize().x / 2.0f, 13 + textRectOutline.height / 2.0f));
+
             FloatRect textRect = timerText.getLocalBounds();
             timerText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
             timerText.setPosition(Vector2f(window.getSize().x / 2.0f, 10 + textRect.height / 2.0f));
@@ -534,8 +549,15 @@ public:
                
             }
 
+            if (coins.empty())
+            {
+                gameWin = true;
+            }
+
             string timerString = "Time: " + to_string(timeLeft);
+            timerTextOutline.setString(timerString);
             timerText.setString(timerString);
+            
             
             if (isLoaded && player.getZone()->getType() == 3) {
                 moveVec(event, player, window);
@@ -545,6 +567,7 @@ public:
                 for (int i=0; i<ENEMY_COUNT; i++) {
                     if (enemies[i].getActive() && checkCollision(player.getSprite(), enemies[i].getShape()) && std::chrono::duration<double, std::milli>(chrono::high_resolution_clock::now()-lastHitted).count() > 1000) {
                         player.setHP(player.getHP()-1);
+                        livesTextOutline.setString("Lives: " + to_string(player.getHP()));
                         livesText.setString("Lives: " + to_string(player.getHP()));
                         if (player.getHP() == 0) {
                             std::cout<<"game over";
@@ -565,6 +588,7 @@ public:
                     points += (*i).getValue();
                     //Update the Score string
                     scoreText.setString("Score: " + to_string(points));
+                    scoreTextOutline.setString("Score: " + to_string(points));
                     //Remove the coin from vector and set iterator to the next coin
                     i=coins.erase(i);
                 }
@@ -572,7 +596,7 @@ public:
                 else ++i;
             }
             
-            if (!gameOver)
+            if (!gameOver && !gameWin)
             {
                 updatePlayerZoneAndColor();
                 window.clear();
@@ -594,9 +618,54 @@ public:
                 }
 
                 player.draw(window);
+                window.draw(timerTextOutline);
                 window.draw(timerText);
+                window.draw(scoreTextOutline);
                 window.draw(scoreText);
+                window.draw(livesTextOutline);
                 window.draw(livesText);
+            }
+            else if (gameWin)
+            {
+                if (!showGameWinScreen)
+                {
+                    RectangleShape darkScreen(Vector2f(window.getSize().x, window.getSize().y));
+                    darkScreen.setFillColor(Color(0, 0, 0, 255));
+                    window.draw(darkScreen);
+
+                    Font gameOverFont;
+                    gameOverFont.loadFromFile("timerFont.otf");
+
+                    Text gameOverText("You Win!", gameOverFont, 50);
+                    gameOverText.setFillColor(Color::White);
+                    FloatRect textRect = gameOverText.getLocalBounds();
+                    gameOverText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                    gameOverText.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f));
+                    window.draw(gameOverText);
+
+                    scoreText.setFont(timerFont);
+                    scoreText.setCharacterSize(30);
+                    scoreText.setFillColor(Color::White);
+                    scoreText.setString("Total Score: " + to_string(points));
+                    FloatRect scoreTextRect = scoreText.getLocalBounds();
+                    scoreText.setOrigin(scoreTextRect.left + scoreTextRect.width / 2.0f, scoreTextRect.top + scoreTextRect.height / 2.0f);
+                    scoreText.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 60.0f));
+                    window.draw(scoreText);
+
+                    Text restartButton("Restart (Press 'R')", gameOverFont, 30);
+                    restartButton.setFillColor(Color::White);
+                    FloatRect restartButtonRect = restartButton.getLocalBounds();
+                    restartButton.setOrigin(restartButtonRect.left + restartButtonRect.width / 2.0f, restartButtonRect.top + restartButtonRect.height / 2.0f);
+                    restartButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 120.0f));
+                    window.draw(restartButton);
+
+                    Text exitButton("Exit (Press 'Esc')", gameOverFont, 30);
+                    exitButton.setFillColor(Color::White);
+                    FloatRect exitButtonRect = exitButton.getLocalBounds();
+                    exitButton.setOrigin(exitButtonRect.left + exitButtonRect.width / 2.0f, exitButtonRect.top + exitButtonRect.height / 2.0f);
+                    exitButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 170.0f));
+                    window.draw(exitButton);
+                }
             }
             else
             {
@@ -618,24 +687,25 @@ public:
 
                     scoreText.setFont(timerFont);
                     scoreText.setCharacterSize(30);
+                    scoreText.setFillColor(Color::White);
                     scoreText.setString("Total Score: " + to_string(points));
                     FloatRect scoreTextRect = scoreText.getLocalBounds();
                     scoreText.setOrigin(scoreTextRect.left + scoreTextRect.width / 2.0f, scoreTextRect.top + scoreTextRect.height / 2.0f);
-                    scoreText.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 50.0f));
+                    scoreText.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 60.0f));
                     window.draw(scoreText);
 
                     Text restartButton("Restart (Press 'R')", gameOverFont, 30);
                     restartButton.setFillColor(Color::White);
                     FloatRect restartButtonRect = restartButton.getLocalBounds();
                     restartButton.setOrigin(restartButtonRect.left + restartButtonRect.width / 2.0f, restartButtonRect.top + restartButtonRect.height / 2.0f);
-                    restartButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 100.0f));
+                    restartButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 120.0f));
                     window.draw(restartButton);
 
                     Text exitButton("Exit (Press 'Esc')", gameOverFont, 30);
                     exitButton.setFillColor(Color::White);
                     FloatRect exitButtonRect = exitButton.getLocalBounds();
                     exitButton.setOrigin(exitButtonRect.left + exitButtonRect.width / 2.0f, exitButtonRect.top + exitButtonRect.height / 2.0f);
-                    exitButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 150.0f));
+                    exitButton.setPosition(Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + 170.0f));
                     window.draw(exitButton);
                 }
                 
