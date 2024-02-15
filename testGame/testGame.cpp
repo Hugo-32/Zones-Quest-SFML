@@ -27,7 +27,7 @@ class Enemy {
     int direction;
 public:
     Enemy() : currentSpriteIndex(0), animationDelay(0.1f), direction(0){
-        texture.loadFromFile("/Evil.png");
+        texture.loadFromFile("Evil.png");
         sprite.setTexture(texture);
         textureRect = IntRect(0, 0, 48, 72);
         sprite.setTextureRect(textureRect);
@@ -74,6 +74,37 @@ public:
     }
     void setActive(bool isActive){
         this->isActive = isActive;
+    }
+    
+    void handleEnemyMovement(Vector2f playerPosition) {
+        const float speed = 0.01f;
+        const Vector2f& enemyPosition = this->getPosition();
+        const FloatRect& enemyBounds = this->getSprite().getGlobalBounds();
+        if (fabs(playerPosition.x - enemyPosition.x)>fabs(playerPosition.y-enemyPosition.y)) {
+            if (playerPosition.x > enemyPosition.x) {
+                this->setDirection(3);//right
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x + speed, enemyPosition.y);
+            }
+            else if (playerPosition.x < enemyPosition.x) {
+                this->setDirection(2);//left
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x - speed, enemyPosition.y);
+            }
+        } else {
+            if (playerPosition.y > enemyPosition.y) {
+                this->setDirection(1);//down
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x, enemyPosition.y + speed);
+            
+            }
+            else if (playerPosition.y < enemyPosition.y) {
+                this->setDirection(4);//up
+                //this->updateAnimation();
+                this->setPosition(enemyPosition.x, enemyPosition.y - speed);
+                
+            }
+        }
     }
     
 };
@@ -233,6 +264,8 @@ public:
             animationClock.restart();
         }
     }
+    
+    
 };
 
 
@@ -266,6 +299,8 @@ public:
 
         float zoneWidth = desktop.width / 2.0f;
         float zoneHeight = desktop.height / 2.0f;
+        
+        
         
         
         
@@ -304,10 +339,11 @@ public:
         }
         
         for (int i=0;i<ENEMY_COUNT;i++) {
+            //enemies[i] = Enemy();
             bool col = true;
             while (col) {
-                int posX = rand()%int(greenZone->getShape().getSize().x-ENEMY_SIZE) + greenZone->getShape().getPosition().x;
-                int posY = rand()%int(greenZone->getShape().getSize().y - ENEMY_SIZE) + greenZone->getShape().getPosition().y;
+                int posX = rand()%int(greenZone->getShape().getSize().x-enemies[i].getSprite().getGlobalBounds().width) + greenZone->getShape().getPosition().x;
+                int posY = rand()%int(greenZone->getShape().getSize().y - enemies[i].getSprite().getGlobalBounds().height) + greenZone->getShape().getPosition().y;
                 enemies[i].setPosition(posX, posY);
                 col = false;
                 for(int j=0;j<i;j++) {
@@ -504,7 +540,7 @@ public:
     }
 
     void run() {
-        player.setScale(2.0f, 2.0f);
+        player.setScale(1.5f, 1.5f);
         int isLoaded = 0;
         auto lastHitted = chrono::high_resolution_clock::now();
         while (window.isOpen()) {
@@ -521,7 +557,7 @@ public:
                     }
                     if (event.key.code == Keyboard::Space && player.getZone()->getType() == 2) {
                         for (int i=0; i<ENEMY_COUNT; i++) {
-                            if (findDistance(player.getSprite(), enemies[i].getSprite()) <= 200) {
+                            if (findDistance(player.getSprite(), enemies[i].getSprite()) <= 100) {
                                 enemies[i].setActive(false);
                             }
                         }
@@ -566,6 +602,7 @@ public:
                         std::cout<<"damage";
                         lastHitted = chrono::high_resolution_clock::now();
                     }
+                    enemies[i].handleEnemyMovement(player.getPosition());
                 }
                 
             }
