@@ -64,12 +64,12 @@ public:
 	/// <summary>
 	/// Amount of coins spread across all areas.
 	/// </summary>
-	static const int GENERAL_COIN_AMOUNT = 100;
+	static const int GENERAL_COIN_AMOUNT = 25;
 
 	/// <summary>
 	/// Amount of coins spread in the invisibility zone.
 	/// </summary>
-	static const int INVISIBILITY_COIN_AMOUNT = 200;
+	static const int INVISIBILITY_COIN_AMOUNT = 25;
 
 	/// <summary>
 	/// Default delay on the coin animation/sprite change in seconds.

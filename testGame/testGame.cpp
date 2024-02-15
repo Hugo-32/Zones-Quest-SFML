@@ -75,8 +75,6 @@ public:
 class BlackZone : public Zone {
 public:
     BlackZone(float width, float height) {
-        //color = Color::Black;
-        //shape.setFillColor(color);
         texture.loadFromFile("background1.png");
         shape.setTexture(&texture);
         shape.setSize(Vector2f(width, height));
@@ -142,9 +140,7 @@ public:
 
 class Player {
 private:
-    //RectangleShape shape;
     Zone* currentZone;
-    //Color playerColor;
     int direction;
     int hp;
     Sprite sprite;
@@ -159,9 +155,7 @@ public:
         sprite.setTexture(texture);
         textureRect = IntRect(0, 0, 64, 128);
         sprite.setTextureRect(textureRect);
-        //shape.setSize(Vector2f(40, 60));
         currentZone = nullptr;
-        //shape.setFillColor(playerColor);
     }
     void setHP(int hp) {
         this->hp = hp;
@@ -188,28 +182,6 @@ public:
     void draw(RenderWindow& window) {
         window.draw(sprite);
     }
-    //void setColor(Color color) {
-    //    playerColor = color;
-    //    shape.setFillColor(playerColor);
-    //}
-    //void setColorBasedOnZone() {
-    //    if (currentZone != nullptr) {
-    //        if (dynamic_cast<BlackZone*>(currentZone) != nullptr) {
-    //            playerColor = Color::White;
-    //        }
-    //        else if (dynamic_cast<BlueZone*>(currentZone) != nullptr) {
-    //            playerColor = Color::Red;
-    //        }
-    //        else if (dynamic_cast<YellowZone*>(currentZone) != nullptr) {
-    //            playerColor = Color::Transparent;
-    //        }
-    //        else if (dynamic_cast<GreenZone*>(currentZone) != nullptr) {
-    //            playerColor = Color::Yellow;
-    //        }
-    //    }
-
-    //    shape.setFillColor(playerColor);
-    //}
 
     int getDirection() {
         return direction;
@@ -251,11 +223,6 @@ public:
     Game() {
         
         VideoMode desktop = VideoMode::getDesktopMode();
-
-
-        /*window.create(VideoMode(800,600), "SFML Game");//, Style::Fullscreen);
-        float zoneWidth = 800 / 2.0f;
-        float zoneHeight = 600 / 2.0f;*/
 
         window.create(VideoMode(desktop.width, desktop.height), "SFML Game", Style::Fullscreen);
 
@@ -316,11 +283,9 @@ public:
                 }*/
             }
         }
-        //Load coins texture
+
         coinTexture.loadFromFile("coin1_16x16.png");
-        //The zone in which coins will be scattered
         sf::IntRect coinZone = sf::IntRect(0,0, desktop.width - Coin::DEFAULT_COIN_RECT_WIDTH, desktop.height - Coin::DEFAULT_COIN_RECT_HEIGHT);
-        //Scatter the coins across all map
         for (int i=0; i<Coin::GENERAL_COIN_AMOUNT; i++)
         {
             Coin tmpcoin(coinTexture);
@@ -328,7 +293,7 @@ public:
             tmpcoin.getSprite().setScale(Coin::DEFAULT_COIN_SCALE, Coin::DEFAULT_COIN_SCALE);
             coins.push_back(tmpcoin);
         }
-        //Find the invisibility zone
+
         int blackZoneIndex=0;
         for (int i = 0; i < 4; i++)
         {
@@ -338,9 +303,9 @@ public:
                 break;
             }
         }
-        //Update coinZone to the invisibility zone bounds
+
         coinZone = sf::IntRect(zones[blackZoneIndex]->getShape().getPosition().x, zones[blackZoneIndex]->getShape().getPosition().y,int(zones[blackZoneIndex]->getShape().getSize().x) - Coin::DEFAULT_COIN_RECT_WIDTH, int(zones[blackZoneIndex]->getShape().getSize().y) - Coin::DEFAULT_COIN_RECT_HEIGHT);
-        //Scatter the coins in the invisibility zone
+
         for (int i = 0; i < Coin::INVISIBILITY_COIN_AMOUNT; i++)
         {
             Coin tmpcoin(coinTexture);
@@ -354,7 +319,7 @@ public:
         timerText.setCharacterSize(27);
         timerText.setFillColor(Color::White);
 
-        //Set the starting text
+
         scoreText.setFont(timerFont);
         scoreText.setCharacterSize(27);
         scoreText.setFillColor(Color::White);
