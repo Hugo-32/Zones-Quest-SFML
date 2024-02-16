@@ -2,6 +2,9 @@
 #include <cstdlib>
 #include <stdexcept>
 
+using namespace std;
+using namespace sf;
+
 Audio::Audio()
 {
     loadBuffer(bufferCoin1, "Audio/geo_small_collect_1.wav");
@@ -20,7 +23,7 @@ Audio::Audio()
     soundVictory.setBuffer(bufferVictory);
 
     if (!backgroundMusic.openFromFile("Audio/bg_music.mp3")) {
-        throw std::runtime_error("Failed to load background music");
+        throw runtime_error("Failed to load background music");
     }
 }
 
@@ -35,16 +38,16 @@ void Audio::stopBackgroundMusic()
     backgroundMusic.stop();
 }
 
-void Audio::loadBuffer(sf::SoundBuffer& buffer, const std::string& filename)
+void Audio::loadBuffer(SoundBuffer& buffer, const string& filename)
 {
     if (!buffer.loadFromFile(filename)) {
-        throw std::runtime_error("Failed to load " + filename);
+        throw runtime_error("Failed to load " + filename);
     }
 }
 
 void Audio::playCoinSound()
 {
-    int randomSound = std::rand() % 2;
+    int randomSound = rand() % 2;
     soundCoin.setBuffer(randomSound == 0 ? bufferCoin1 : bufferCoin2);
     soundCoin.play();
 }
